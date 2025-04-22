@@ -23,4 +23,18 @@ dist-ssr
 *.sln
 *.sw?
 
+# Environment vars
 .env
+
+# ───── Python virtual environments ─────
+# virtualenv, pipenv, poetry, venv
+env/
+ENV/
+venv/
+.venv/
+env.bak/
+venv.bak/
+
+# pyenv local Python version file
+.python-version
+
