@@ -1,87 +1,122 @@
-import { useState } from 'react'
-import './App.css'
-import ReactHtmlParser from 'react-html-parser'; 
-import { createClient } from '@supabase/supabase-js';
+// App.jsx
+import { useEffect, useRef, useState } from 'react';
+import './App.css';
+import parse from 'html-react-parser';
 import ThresholdSelector from './Components/ThresholdSelector.jsx';
 
-const supabaseUrl = import.meta.env.VITE_DATABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_DATABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-const customWords = ["Biden", "Trump"];
+/* ---------- constants ---------- */
+const customWords = new Set(['biden', 'trump']);   // case-insensitive
 
 function App() {
-  const [input,setInput] = useState("");
-  const [output, setOutput] = useState("");
+  /* ---------- state ---------- */
+  const [input, setInput]         = useState('');
+  const [output, setOutput]       = useState('');
   const [threshold, setThreshold] = useState(15000);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [isBusy, setIsBusy]       = useState(false);
+  const [freqReady, setFreqReady] = useState(false);
 
-  const getInfo = async () => {
-    setIsButtonDisabled(true);
+  /* ---------- frequency map ---------- */
+  const freqRef = useRef(null);   // { word: rank }
 
-    // get array of individual words
-    const words = input.replace( /\n/g, " " ).split(" ");
-    let outputStr = ``;
+  /* ---------- load JSON once ---------- */
+  useEffect(() => {
+    (async () => {
+      try {
+        const res  = await fetch('/words.json');   // static asset in /public
+        const data = await res.json();
+        freqRef.current = data;
+        setFreqReady(true);
+      } catch (err) {
+        console.error('Failed to load frequency list', err);
+      }
+    })();
+  }, []);
 
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i].trim().toLowerCase();
-      const wordLettersOnly = word.replace(/[^a-zA-Z ]/g, "");
-      const { data, } = await supabase.from('word_frequencies').select().eq("word", wordLettersOnly);
-      
-      // if (data.length == 0) {
-      //   continue;
-      // }
-      if (data.length == 0) {
-        outputStr += `${words[i]} `;
-      } else if (/^\d+$/.test(word)) {
-        outputStr += `${words[i]} `;
-      } else if (data[0].id > threshold && !customWords.includes(words[i])) {
-        outputStr += `<p class="blur">${words[i]}</p> `;
-      } else {
-        outputStr += `${words[i]} `;
+  /* ---------- handlers ---------- */
+  const handleChange     = e => setInput(e.target.value);
+  const handleThreshold  = e => setThreshold(Number(e.target.value));
+
+  const getInfo = () => {
+    if (!freqRef.current) return;
+    setIsBusy(true);
+
+    /* --- 1 · primary tokenisation on whitespace --- */
+    const roughTokens = (input || '')
+      .replace(/\n/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean);
+
+    let html = '';
+
+    for (const rawToken of roughTokens) {
+      const lowerRaw = rawToken.toLowerCase();
+
+      /* Skip immediate cases: custom words or pure numbers */
+      if (customWords.has(lowerRaw) || /^\d+$/.test(lowerRaw.replace(/[^0-9]/g, ''))) {
+        html += `${rawToken} `;
+        continue;
       }
 
-      setOutput(outputStr);
+      /* --- 1a · secondary split on hyphens & apostrophes --- */
+      const subTokens = rawToken.split(/[-–—'’]/);      // keeps punctuation in rawToken
+
+      /* --- 2 · determine if any sub-token is outside threshold --- */
+      let blur = false;
+
+      for (const sub of subTokens) {
+        const clean = sub.toLowerCase().replace(/[^a-z]/g, '');
+        if (!clean) continue;                           // empty after cleanup
+        const rank = freqRef.current[clean];
+        if (rank === undefined || rank > threshold) {
+          blur = true;
+          break;
+        }
+      }
+
+      /* --- 3 · build HTML --- */
+      html += blur
+        ? `<span class="blur">${rawToken}</span> `
+        : `${rawToken} `;
     }
-    setIsButtonDisabled(false);
-  }
 
-  let handleChange = (e) => {
-    setInput(e.target.value);
-  }
+    setOutput(html.trim());
+    setIsBusy(false);
+  };
 
-  let handleRadioChange = (e) => {
-    setThreshold(e.target.value);
-  }
-
+  /* ---------- render ---------- */
   return (
     <div className="App">
       <h1>View Text through Your Students' Eyes</h1>
-      <div className="info-container">
-        <p className="info">What do students see when they read a high-level text? This experimental app helps users understand 
-        the experience of students with varying levels of English proficiency. The app uses a database of the 100,000 most 
-        common words in the English language. When you enter text below, the app will search for the frequency of
-        each word and compare its rank to the selected threshold. For example, "mayhem" is the 16,673rd most 
-        common word in the database, making it a very rare word. Under assumption that the average high school
-        graduate has a vocabulary of 15,000 words, they are less likely to know "mayham" than words below this threshold. 
-        Words below the frequency are blurred to simulate the experience of skipping over or ignoring an unknown word.</p>
-        <p className="info">This app is meant to be an <strong>approximation</strong> of what various groups of students may experience,
-        but its methodology is far from perfect. I hope it can act as a thought-provoking test for teachers, parents, and
-        community members to help better meet students where they are at.</p>
-      </div>
-      <ThresholdSelector handleChange={handleRadioChange} isDisabled={isButtonDisabled}></ThresholdSelector>
+
+      {/* -- rest of your explanatory text / intro panel here -- */}
+
+      <ThresholdSelector
+        handleChange={handleThreshold}
+        isDisabled={isBusy || !freqReady}
+      />
+
       <h2>Current frequency threshold: {threshold}</h2>
+
       <div className="inputContainer">
-        <h2>You see...</h2>
-        <textarea placeholder="Enter your text here..." onChange={handleChange}></textarea>
-        <button disabled={isButtonDisabled} onClick={getInfo}>Submit</button>
+        <h2>You see…</h2>
+        <textarea
+          placeholder="Enter your text here…"
+          onChange={handleChange}
+          disabled={!freqReady}
+        />
+        <button disabled={isBusy || !freqReady} onClick={getInfo}>
+          {isBusy ? 'Working…' : 'Submit'}
+        </button>
       </div>
+
       <div className="outputContainer">
         <h2>What do they see?</h2>
-        <div className="outputText"> { ReactHtmlParser (output) } </div>
+        <div className="outputText">
+          {parse(output)}
+        </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default App;
