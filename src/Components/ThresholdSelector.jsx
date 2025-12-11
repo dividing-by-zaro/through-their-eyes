@@ -1,27 +1,35 @@
-import { useState } from 'react'
-import '../App.css'
+const THRESHOLDS = [
+  { value: 500, name: 'Newcomer', description: '500 most common words' },
+  { value: 3000, name: 'Conversational', description: '3,000 words' },
+  { value: 10000, name: 'Native Speaker', description: '10,000 words' },
+  { value: 15000, name: 'Advanced', description: '15,000 words' },
+];
 
-function ThresholdSelector(props) {
-    return (
-        <div onChange={props.handleChange}>
-            <div>
-                <input type="radio" value={500} name="thresh" id="thresh1" disabled={props.isDisabled}/> 
-                <label htmlFor="thresh1">Newcomer (500 words)</label>
-            </div>
-            <div>
-                <input type="radio" value={3000} name="thresh" id="thresh2" disabled={props.isDisabled}/> 
-                <label htmlFor="thresh2">Everyday Conversant Nonnative Speaker (3000 words)</label>
-            </div>
-            <div>
-                <input type="radio" value={10000} name="thresh" id="thresh3" disabled={props.isDisabled}/>
-                <label htmlFor="thresh3">Native Speaker (10,000 words)</label>
-            </div>
-            <div>
-                <input type="radio" value={15000} name="thresh" id="thresh4" disabled={props.isDisabled}/>
-                <label htmlFor="thresh4">Big Balling Speaker (15,000 words)</label>
-            </div>
-        </div>
-    )
+function ThresholdSelector({ value, onChange, isDisabled }) {
+  return (
+    <section className="threshold-section">
+      <span className="threshold-label">Vocabulary Level</span>
+      <div className="threshold-options">
+        {THRESHOLDS.map((t) => (
+          <div key={t.value} className="threshold-option">
+            <input
+              type="radio"
+              id={`thresh-${t.value}`}
+              name="threshold"
+              value={t.value}
+              checked={value === t.value}
+              onChange={() => onChange(t.value)}
+              disabled={isDisabled}
+            />
+            <label htmlFor={`thresh-${t.value}`}>
+              <span className="threshold-name">{t.name}</span>
+              <span className="threshold-words">{t.description}</span>
+            </label>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export default ThresholdSelector;

@@ -1,127 +1,592 @@
-#root {
-  padding: 2rem;
-  width: 1280px;
-}
-
-.card {
-  padding: 2em;
-}
-
-textarea {
-  width: 80%;
-  height: 20em;
-  text-align: left;
-  word-wrap: normal;
-}
-
-.outputText {
-  text-align: left;
-  width: 100%;
-}
-
-.outputContainer {
-  margin-left: 10%;
-  margin-right: 10%;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  margin-bottom: 20em;
-}
+/* =========================================
+   Through Their Eyes - Sidebar Layout
+   ========================================= */
 
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
+  /* Warm paper & ink palette */
+  --cream: #F7F3EB;
+  --warm-white: #FFFEF9;
+  --parchment: #EDE6D6;
+  --ink: #2C2416;
+  --ink-light: #5C4F3A;
+  --pencil: #8B7355;
+  --chalkboard: #2A3F3B;
+  --chalk: #E8E4D9;
+  --highlight: #C7522A;
+  --highlight-soft: #E8B4A0;
+  --success: #4A7C59;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* Sidebar */
+  --sidebar-width: 280px;
+  --sidebar-bg: #2C2416;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+  /* Typography */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Source Serif 4', Georgia, serif;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+/* Reset & Base */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
-a:hover {
-  color: #535bf2;
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+html {
+  font-size: 17px;
 }
 
 body {
-  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.7;
+}
+
+#root {
+  height: 100%;
+}
+
+/* =========================================
+   App Layout - Sidebar + Main
+   ========================================= */
+
+.App {
   display: flex;
-  min-width: 320px;
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
+/* =========================================
+   Sidebar
+   ========================================= */
 
-button {
-  width: 40%;
-  margin-top: 20px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-  color: white;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-button:disabled {
-  color: gray;
-  cursor: not-allowed;
-}
-
-input:disabled {
-  cursor: not-allowed;
-}
-
-.inputContainer {
+.sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  color: var(--chalk);
   display: flex;
   flex-direction: column;
-  align-items: center;
+  padding: var(--space-lg);
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  overflow-y: auto;
 }
+
+.sidebar-header {
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid rgba(232, 228, 217, 0.15);
+  margin-bottom: var(--space-lg);
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--chalk);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.logo .highlight {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--highlight);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: var(--space-lg);
+  border-top: 1px solid rgba(232, 228, 217, 0.15);
+}
+
+.sidebar-footer p {
+  font-size: 0.8rem;
+  color: rgba(232, 228, 217, 0.6);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* =========================================
+   Threshold Selector - Sidebar Style
+   ========================================= */
+
+.threshold-section {
+  flex: 1;
+}
+
+.threshold-label {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(232, 228, 217, 0.5);
+  margin-bottom: var(--space-md);
+  display: block;
+}
+
+.threshold-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.threshold-option {
+  position: relative;
+}
+
+.threshold-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.threshold-option label {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+.threshold-option label:hover {
+  background: rgba(232, 228, 217, 0.08);
+}
+
+.threshold-option input[type="radio"]:checked + label {
+  background: var(--highlight);
+  border-color: var(--highlight);
+}
+
+.threshold-option input[type="radio"]:disabled + label {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.threshold-name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--chalk);
+}
+
+.threshold-words {
+  font-size: 0.75rem;
+  color: rgba(232, 228, 217, 0.6);
+}
+
+.threshold-option input[type="radio"]:checked + label .threshold-words {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* =========================================
+   Main Content Area
+   ========================================= */
+
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* =========================================
+   View Tabs
+   ========================================= */
+
+.view-tabs {
+  display: flex;
+  gap: 0;
+  background: var(--parchment);
+  padding: var(--space-sm) var(--space-lg);
+  border-bottom: 1px solid rgba(44, 36, 22, 0.1);
+}
+
+.view-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--pencil);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-tab:hover:not(.disabled) {
+  background: rgba(44, 36, 22, 0.06);
+  color: var(--ink);
+}
+
+.view-tab.active {
+  background: var(--warm-white);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(44, 36, 22, 0.1);
+}
+
+.view-tab.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tab-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tab-icon.teacher {
+  background: var(--chalkboard);
+  color: var(--chalk);
+}
+
+.tab-icon.student {
+  background: var(--highlight);
+  color: var(--warm-white);
+}
+
+.tab-icon.about {
+  background: var(--pencil);
+  color: var(--warm-white);
+}
+
+/* =========================================
+   View Container
+   ========================================= */
+
+.view-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-xl);
+  background: var(--cream);
+
+  /* Subtle paper texture */
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-blend-mode: soft-light;
+  background-size: 200px;
+}
+
+/* =========================================
+   Teacher View
+   ========================================= */
+
+.teacher-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--space-lg);
+}
+
+/* Sample Text Buttons */
+.sample-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.sample-label {
+  font-size: 0.9rem;
+  color: var(--pencil);
+  margin-right: var(--space-xs);
+}
+
+.sample-btn {
+  padding: var(--space-xs) var(--space-md);
+  background: var(--warm-white);
+  color: var(--ink-light);
+  border: 1px solid var(--parchment);
+  border-radius: 100px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sample-btn:hover:not(:disabled) {
+  border-color: var(--highlight);
+  color: var(--highlight);
+  background: var(--cream);
+}
+
+.sample-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.teacher-view textarea {
+  flex: 1;
+  min-height: 400px;
+  padding: var(--space-xl);
+  border: 2px solid var(--parchment);
+  border-radius: 8px;
+  background: var(--warm-white);
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  line-height: 1.9;
+  color: var(--ink);
+  resize: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.teacher-view textarea::placeholder {
+  color: var(--pencil);
+  font-style: italic;
+}
+
+.teacher-view textarea:focus {
+  outline: none;
+  border-color: var(--highlight);
+  box-shadow: 0 0 0 3px var(--highlight-soft);
+}
+
+.teacher-view textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   Student View
+   ========================================= */
+
+.student-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--space-lg);
+}
+
+.student-view .output-text {
+  flex: 1;
+  min-height: 400px;
+  padding: var(--space-xl);
+  border: 2px solid var(--chalkboard);
+  border-radius: 8px;
+  background: var(--chalkboard);
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  line-height: 1.9;
+  color: var(--chalk);
+  overflow-y: auto;
+}
+
+.student-view .output-text:empty::before {
+  content: "Their view will appear here...";
+  color: rgba(232, 228, 217, 0.4);
+  font-style: italic;
+}
+
+/* =========================================
+   Buttons
+   ========================================= */
+
+.submit-btn,
+.edit-btn {
+  align-self: flex-start;
+  padding: var(--space-md) var(--space-xl);
+  background: var(--highlight);
+  color: var(--warm-white);
+  border: none;
+  border-radius: 100px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(199, 82, 42, 0.3);
+}
+
+.submit-btn:hover:not(:disabled),
+.edit-btn:hover:not(:disabled) {
+  background: #B5461F;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(199, 82, 42, 0.4);
+}
+
+.submit-btn:active:not(:disabled),
+.edit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submit-btn:disabled {
+  background: var(--pencil);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.edit-btn {
+  background: var(--chalkboard);
+  border: 2px solid var(--chalk);
+  box-shadow: none;
+}
+
+.edit-btn:hover:not(:disabled) {
+  background: var(--ink);
+  box-shadow: 0 4px 16px rgba(44, 36, 22, 0.3);
+}
+
+/* =========================================
+   Blur Effect
+   ========================================= */
 
 .blur {
   color: transparent;
-  text-shadow: 0 0 8px #FFFFFF;
-  display: inline;
+  text-shadow: 0 0 12px var(--chalk);
+  transition: all 0.3s ease;
+  cursor: help;
+  border-radius: 2px;
+  padding: 0 2px;
+  margin: 0 -2px;
 }
 
 .blur:hover {
   text-shadow: none;
-  color: rgba(255, 255, 255, 0.87);
-  cursor: none;
+  color: var(--highlight-soft);
+  background: rgba(199, 82, 42, 0.2);
 }
 
-.info {
-  font-size: 0.85em;
+/* =========================================
+   About View
+   ========================================= */
+
+.about-view {
+  max-width: 700px;
 }
 
-.info-container {
-  background-color: lightsteelblue;
-  border-radius: 5px;
-  padding: 10px;
-  margin-bottom: 20px;
-  color: black;
+.about-view h2 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink);
+  margin: 0 0 var(--space-xl) 0;
+}
+
+.about-section {
+  margin-bottom: var(--space-xl);
+}
+
+.about-section h3 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.about-section p {
+  margin: 0 0 var(--space-md) 0;
+  color: var(--ink-light);
+}
+
+.about-section strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.about-section ul {
+  margin: 0;
+  padding-left: var(--space-lg);
+  color: var(--ink-light);
+}
+
+.about-section li {
+  margin-bottom: var(--space-sm);
+}
+
+.about-section li strong {
+  color: var(--highlight);
+}
+
+/* =========================================
+   Responsive
+   ========================================= */
+
+@media (max-width: 900px) {
+  :root {
+    --sidebar-width: 240px;
+  }
+
+  .view-container {
+    padding: var(--space-lg);
+  }
+}
+
+@media (max-width: 700px) {
+  .App {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: relative;
+    width: 100%;
+    min-width: 100%;
+    padding: var(--space-md);
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .threshold-options {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .threshold-option {
+    flex: 1;
+    min-width: 120px;
+  }
+}
+
+/* =========================================
+   Animations
+   ========================================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.view-container > * {
+  animation: fadeIn 0.3s ease backwards;
 }
