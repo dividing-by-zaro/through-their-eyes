@@ -8,22 +8,18 @@ const customWords = new Set(['biden', 'trump']);
 const SAMPLE_TEXTS = {
   nyt: {
     label: 'NYT Article',
-    text: '' // Will be filled in
+    file: '/examples/nytimes.txt'
   },
   minecraft: {
     label: 'Minecraft News',
-    text: '' // Will be filled in
-  },
-  science: {
-    label: 'Science Textbook',
-    text: '' // Will be filled in
+    file: '/examples/minecraft.txt'
   }
 };
 
 function App() {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
-  const [threshold, setThreshold] = useState(3000);
+  const [threshold, setThreshold] = useState(4150); // B1 default
   const [isBusy, setIsBusy] = useState(false);
   const [freqReady, setFreqReady] = useState(false);
   const [view, setView] = useState('teacher'); // 'teacher', 'student', or 'about'
@@ -45,7 +41,15 @@ function App() {
   }, []);
 
   const handleInputChange = (e) => setInput(e.target.value);
-  const loadSampleText = (key) => setInput(SAMPLE_TEXTS[key].text);
+  const loadSampleText = async (key) => {
+    try {
+      const res = await fetch(SAMPLE_TEXTS[key].file);
+      const text = await res.text();
+      setInput(text);
+    } catch (err) {
+      console.error('Failed to load sample text', err);
+    }
+  };
   const handleThresholdChange = (value) => {
     setThreshold(value);
     // Re-process if we've already submitted
@@ -57,40 +61,44 @@ function App() {
   const processTextWithThreshold = (thresh) => {
     if (!freqRef.current) return;
 
-    const roughTokens = (input || '')
-      .replace(/\n/g, ' ')
-      .split(/\s+/)
-      .filter(Boolean);
+    // Split into paragraphs to preserve line breaks
+    const paragraphs = (input || '').split(/\n/);
+    const processedParagraphs = [];
 
-    let html = '';
+    for (const paragraph of paragraphs) {
+      const roughTokens = paragraph.split(/\s+/).filter(Boolean);
+      let paragraphHtml = '';
 
-    for (const rawToken of roughTokens) {
-      const lowerRaw = rawToken.toLowerCase();
+      for (const rawToken of roughTokens) {
+        const lowerRaw = rawToken.toLowerCase();
 
-      if (customWords.has(lowerRaw) || !/[a-z]/i.test(rawToken)) {
-        html += `${rawToken} `;
-        continue;
-      }
-
-      const subTokens = rawToken.split(/[-–—'']/);
-      let blur = false;
-
-      for (const sub of subTokens) {
-        const clean = sub.toLowerCase().replace(/[^a-z]/g, '');
-        if (!clean) continue;
-        const rank = freqRef.current[clean];
-        if (rank === undefined || rank > thresh) {
-          blur = true;
-          break;
+        if (customWords.has(lowerRaw) || !/[a-z]/i.test(rawToken)) {
+          paragraphHtml += `${rawToken} `;
+          continue;
         }
+
+        const subTokens = rawToken.split(/[-–—'']/);
+        let blur = false;
+
+        for (const sub of subTokens) {
+          const clean = sub.toLowerCase().replace(/[^a-z]/g, '');
+          if (!clean) continue;
+          const rank = freqRef.current[clean];
+          if (rank === undefined || rank > thresh) {
+            blur = true;
+            break;
+          }
+        }
+
+        paragraphHtml += blur
+          ? `<span class="blur">${rawToken}</span> `
+          : `${rawToken} `;
       }
 
-      html += blur
-        ? `<span class="blur">${rawToken}</span> `
-        : `${rawToken} `;
+      processedParagraphs.push(paragraphHtml.trim());
     }
 
-    setOutput(html.trim());
+    setOutput(processedParagraphs.join('<br/>'));
   };
 
   const processText = () => {

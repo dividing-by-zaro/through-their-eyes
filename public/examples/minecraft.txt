@@ -1,0 +1,63 @@
+Minecraft Java 1.21.11 Released
+
+Today Mounts of Mayhem charges into Minecraft, bringing a new weapon to wield, mounts to tame, foes to face, and strategies to master! Challengers await beneath scorching suns, night skies, and deep in the ocean's depths – and each clash will demand a fresh strategy. Fight back with the spear, a new tiered weapon which deals damage based on your precision and the speed of your trusted steed. So, riders of the Overworld – mount up and lead the charge in the Mounts of Mayhem drop!
+
+New Features
+
+• Added the Nautilus and the Zombie Nautilus mobs
+• Added Nautilus Armor
+• Added the Camel Husk mob
+• Added the Parched mob
+• Added Spear weapons
+• Zombie Horses now spawn naturally
+• Added new graphical options "Texture Filtering" and "Anisotropic Filtering"
+• Added Netherite Horse Armor that can be obtained by upgrading Diamond Horse Armor using a Smithing Table
+
+Nautilus
+
+The Nautilus is a new neutral aquatic mob that spawns in all ocean biomes. It attacks using a Dash attack if provoked, and occasionally attacks Pufferfish within range. The Nautilus takes suffocation damage on land and can be bred and tamed using a Pufferfish or a Bucket of Pufferfish.
+
+A tamed Nautilus:
+• Can be equipped with a Saddle to ride
+• Has an inventory screen for managing Saddle and Armor
+• Has a Dash skill similar to Camels, used by pressing the Jump button
+• Adds the "Breath of the Nautilus" effect to mounted players
+
+Zombie Nautilus
+
+The Zombie Nautilus is a new underwater mob that spawns with a Drowned rider wielding a Trident. It is only hostile if ridden by a hostile mob and behaves similar to the Nautilus except that it cannot be bred. The Coral Zombie Nautilus variant spawns in the Warm Ocean biome.
+
+Nautilus Armor
+
+Equippable on the Nautilus and Zombie Nautilus, Nautilus Armor comes in Copper, Golden, Iron, Diamond and Netherite versions. Copper, Iron, Golden, and Diamond Nautilus Armor can be found in chests in Buried Treasure, Ocean Ruins, and Shipwrecks. Netherite Nautilus Armor is created by upgrading from Diamond Nautilus Armor using a Smithing Table.
+
+Parched
+
+The Parched is a new Skeleton variant that spawns at light level 0 in Deserts, replacing some regular Skeletons. It does not spawn in caves and does not burn in sunlight. The Parched shoots Arrows of Weakness, is immune to the Weakness effect, and has a slower rate of fire compared to normal Skeletons.
+
+Camel Husk
+
+The Camel Husk is a new undead Camel variant that spawns at light level 0 in Deserts with two riders: a Husk wielding a Spear and a Parched. It does not burn in sunlight and is hostile only if the rider is hostile. The Camel Husk can be fed Rabbit Feet to heal but cannot be bred.
+
+Spear Weapon
+
+The Spear is a new weapon that can be crafted in Wood, Stone, Copper, Iron, Gold, Diamond, and Netherite versions. Each material has different stats for timing, influencing how fast they are to use. The Spear has extended maximum reach compared to other weapons but requires minimum distance to deal damage.
+
+The Spear has two attacks:
+• Jab Attack: Quick-press for a low damage attack with knockback that can hit multiple enemies
+• Charge Attack: Hold to deal damage based on material, view angle, and velocity of both player and target
+
+Zombie Horse
+
+Zombie Horses now spawn naturally in darkness and burn in sunlight like other undead mobs. They spawn with a Zombie rider and can be tamed like regular Horses. Horse Armor protects Zombie Horses from sunlight damage, and they can be healed using Red Mushrooms.
+
+Changes
+
+• Horses, Mules, Donkeys, and Camels no longer sink in water while ridden by a player
+• Bats no longer spawn more frequently between October 20 and November 3
+• Items will no longer "bob" whenever their durability changes
+• Parrots can now mimic the sounds of Zombie Nautilus, Zombie Horse, Camel Husk and Parched
+• Chunks now fade in instead of appearing suddenly
+• Graphics modes "Fast", "Fancy", and "Fabulous!" have been replaced with graphics presets
+• Cloud movement is now the same for all players on a server
+• Client FPS is expected to be higher for most players

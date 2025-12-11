@@ -45,7 +45,7 @@ html, body {
 }
 
 html {
-  font-size: 17px;
+  font-size: 15px;
 }
 
 body {
@@ -199,6 +199,27 @@ body {
   color: rgba(255, 255, 255, 0.8);
 }
 
+.threshold-hint {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  font-size: 0.7rem;
+  color: rgba(232, 228, 217, 0.4);
+  cursor: help;
+}
+
+.threshold-option label:hover .threshold-hint {
+  color: rgba(232, 228, 217, 0.7);
+}
+
+.threshold-option input[type="radio"]:checked + label .threshold-hint {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.threshold-option label {
+  position: relative;
+}
+
 /* =========================================
    Main Content Area
    ========================================= */
@@ -219,20 +240,20 @@ body {
   display: flex;
   gap: 0;
   background: var(--parchment);
-  padding: var(--space-sm) var(--space-lg);
+  padding: var(--space-xs) var(--space-md);
   border-bottom: 1px solid rgba(44, 36, 22, 0.1);
 }
 
 .view-tab {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-lg);
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-md);
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   font-family: var(--font-display);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 500;
   color: var(--pencil);
   cursor: pointer;
@@ -256,13 +277,13 @@ body {
 }
 
 .tab-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 600;
 }
 
@@ -289,7 +310,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: var(--space-xl);
+  padding: var(--space-md) var(--space-lg);
   background: var(--cream);
 
   /* Subtle paper texture */
@@ -307,7 +328,7 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: var(--space-lg);
+  gap: var(--space-sm);
 }
 
 /* Sample Text Buttons */
@@ -349,14 +370,14 @@ body {
 
 .teacher-view textarea {
   flex: 1;
-  min-height: 400px;
-  padding: var(--space-xl);
-  border: 2px solid var(--parchment);
-  border-radius: 8px;
+  min-height: 300px;
+  padding: var(--space-md);
+  border: 1px solid var(--parchment);
+  border-radius: 6px;
   background: var(--warm-white);
   font-family: var(--font-body);
-  font-size: 1.1rem;
-  line-height: 1.9;
+  font-size: 0.95rem;
+  line-height: 1.6;
   color: var(--ink);
   resize: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -386,19 +407,19 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: var(--space-lg);
+  gap: var(--space-sm);
 }
 
 .student-view .output-text {
   flex: 1;
-  min-height: 400px;
-  padding: var(--space-xl);
-  border: 2px solid var(--chalkboard);
-  border-radius: 8px;
+  min-height: 300px;
+  padding: var(--space-md);
+  border: 1px solid var(--chalkboard);
+  border-radius: 6px;
   background: var(--chalkboard);
   font-family: var(--font-body);
-  font-size: 1.1rem;
-  line-height: 1.9;
+  font-size: 0.95rem;
+  line-height: 1.6;
   color: var(--chalk);
   overflow-y: auto;
 }
@@ -416,13 +437,13 @@ body {
 .submit-btn,
 .edit-btn {
   align-self: flex-start;
-  padding: var(--space-md) var(--space-xl);
+  padding: var(--space-sm) var(--space-lg);
   background: var(--highlight);
   color: var(--warm-white);
   border: none;
   border-radius: 100px;
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
