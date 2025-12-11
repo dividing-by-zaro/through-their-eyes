@@ -11,6 +11,8 @@ npm run dev
 
 ## TODO
 
-- [ ] **UI Redesign** - Modernize the interface for better aesthetics and usability
+- [x] **UI Redesign** - Modernize the interface for better aesthetics and usability
 - [ ] **95% Comprehension Threshold** - Display percentage of known words and indicate whether text meets the 95% threshold required for reading comprehension
-- [ ] **A-C Vocabulary Levels** - Implement standardized A1, A2, B1, B2, C1, C2 (CEFR) vocabulary tiers instead of raw word counts
+- [x] **CEFR Vocabulary Levels** - Implement standardized A1, A2, B1, B2, C1, C2 vocabulary tiers based on research data
+- [ ] **AI Simplification** - Use AI to generate a simpler version of the article at the selected reading level
+- [ ] **Word Details on Hover** - Show frequency rank and definition when hovering over a word

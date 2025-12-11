@@ -14,7 +14,8 @@
   --chalk: #E8E4D9;
   --highlight: #C7522A;
   --highlight-soft: #E8B4A0;
-  --success: #4A7C59;
+  --success: #2563EB;
+  --warning: #EA580C;
 
   /* Sidebar */
   --sidebar-width: 280px;
@@ -79,27 +80,24 @@ body {
   color: var(--chalk);
   display: flex;
   flex-direction: column;
-  padding: var(--space-lg);
+  padding: var(--space-md);
   position: fixed;
   left: 0;
   top: 0;
   bottom: 0;
-  overflow-y: auto;
-}
-
-.sidebar-header {
-  padding-bottom: var(--space-lg);
-  border-bottom: 1px solid rgba(232, 228, 217, 0.15);
-  margin-bottom: var(--space-lg);
+  overflow: hidden;
 }
 
 .logo {
   font-family: var(--font-display);
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 400;
   font-style: italic;
   color: var(--chalk);
   margin: 0;
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid rgba(232, 228, 217, 0.15);
   line-height: 1.3;
 }
 
@@ -107,19 +105,6 @@ body {
   font-style: normal;
   font-weight: 600;
   color: var(--highlight);
-}
-
-.sidebar-footer {
-  margin-top: auto;
-  padding-top: var(--space-lg);
-  border-top: 1px solid rgba(232, 228, 217, 0.15);
-}
-
-.sidebar-footer p {
-  font-size: 0.8rem;
-  color: rgba(232, 228, 217, 0.6);
-  margin: 0;
-  line-height: 1.5;
 }
 
 /* =========================================
@@ -132,19 +117,19 @@ body {
 
 .threshold-label {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   color: rgba(232, 228, 217, 0.5);
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-xs);
   display: block;
 }
 
 .threshold-options {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: 2px;
 }
 
 .threshold-option {
@@ -161,9 +146,9 @@ body {
 .threshold-option label {
   display: flex;
   flex-direction: column;
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-xs) var(--space-sm);
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
   background: transparent;
@@ -274,6 +259,10 @@ body {
 .view-tab.disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.view-tab.tab-right {
+  margin-left: auto;
 }
 
 .tab-icon {
@@ -407,7 +396,119 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: var(--space-sm);
+  gap: var(--space-md);
+}
+
+/* =========================================
+   Stats Panel
+   ========================================= */
+
+.stats-panel {
+  background: var(--warm-white);
+  border: 1px solid var(--parchment);
+  border-radius: 8px;
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.comprehension-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.comprehension-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--ink-light);
+}
+
+.comprehension-label strong {
+  color: var(--ink);
+}
+
+.comprehension-status {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.comprehension-status.pass {
+  color: var(--success);
+}
+
+.comprehension-status.fail {
+  color: var(--warning);
+}
+
+.comprehension-bar {
+  position: relative;
+  height: 16px;
+  background: var(--parchment);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  margin-bottom: var(--space-md);
+}
+
+.comprehension-known {
+  background: var(--success);
+  transition: width 0.3s ease;
+}
+
+.comprehension-unknown {
+  background: var(--warning);
+  transition: width 0.3s ease;
+}
+
+.comprehension-threshold {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--ink);
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+.comprehension-threshold::after {
+  content: '95% threshold';
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  color: var(--ink);
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.stats-row {
+  display: flex;
+  gap: var(--space-lg);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--pencil);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .student-view .output-text {
@@ -487,7 +588,7 @@ body {
   color: transparent;
   text-shadow: 0 0 12px var(--chalk);
   transition: all 0.3s ease;
-  cursor: help;
+  cursor: default;
   border-radius: 2px;
   padding: 0 2px;
   margin: 0 -2px;
@@ -550,6 +651,17 @@ body {
 
 .about-section li strong {
   color: var(--highlight);
+}
+
+.about-section a {
+  color: var(--highlight);
+  text-decoration: none;
+  border-bottom: 1px solid var(--highlight-soft);
+  transition: border-color 0.2s ease;
+}
+
+.about-section a:hover {
+  border-bottom-color: var(--highlight);
 }
 
 /* =========================================

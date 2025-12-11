@@ -46,7 +46,7 @@ const THRESHOLDS = [
 function ThresholdSelector({ value, onChange, isDisabled }) {
   return (
     <section className="threshold-section">
-      <span className="threshold-label">CEFR Level</span>
+      <span className="threshold-label">Select a CEFR level</span>
       <div className="threshold-options">
         {THRESHOLDS.map((t) => (
           <div key={t.value} className="threshold-option">

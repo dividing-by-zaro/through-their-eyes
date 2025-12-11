@@ -26,6 +26,12 @@ dist-ssr
 # Environment vars
 .env
 
+# Backup files
+backups/
+
+# Claude Code local settings
+.claude/
+
 # ───── Python virtual environments ─────
 # virtualenv, pipenv, poetry, venv
 env/
