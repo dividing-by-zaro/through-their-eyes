@@ -22,6 +22,22 @@ const CONTRACTIONS = {
 };
 
 const SAMPLE_TEXTS = {
+  science: {
+    label: 'Water Cycle',
+    file: '/examples/science.txt'
+  },
+  history: {
+    label: 'Industrial Revolution',
+    file: '/examples/history.txt'
+  },
+  biology: {
+    label: 'Cell Energy',
+    file: '/examples/biology.txt'
+  },
+  literature: {
+    label: 'Short Story',
+    file: '/examples/literature.txt'
+  },
   nyt: {
     label: 'NYT Article',
     file: '/examples/nytimes.txt'
