@@ -12,7 +12,8 @@
     "@supabase/supabase-js": "^2.1.0",
     "html-react-parser": "^5.2.3",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "wink-lemmatizer": "^3.0.4"
   },
   "devDependencies": {
     "@types/react": "^18.0.26",

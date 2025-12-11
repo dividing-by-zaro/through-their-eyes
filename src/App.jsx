@@ -2,8 +2,24 @@ import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import parse from 'html-react-parser';
 import ThresholdSelector from './Components/ThresholdSelector.jsx';
+import { getBestLemma, clearLemmaCache } from './utils/lemmatizer.js';
 
 const customWords = new Set(['biden', 'trump']);
+
+// Map contractions to their base verb for frequency lookup
+const CONTRACTIONS = {
+  "aren't": "are", "isn't": "is", "wasn't": "was", "weren't": "were",
+  "don't": "do", "doesn't": "do", "didn't": "do",
+  "won't": "will", "wouldn't": "would", "couldn't": "could", "shouldn't": "should",
+  "can't": "can", "cannot": "can",
+  "hasn't": "have", "haven't": "have", "hadn't": "have",
+  "i'm": "be", "you're": "be", "we're": "be", "they're": "be", "he's": "be", "she's": "be", "it's": "be",
+  "i've": "have", "you've": "have", "we've": "have", "they've": "have",
+  "i'll": "will", "you'll": "will", "we'll": "will", "they'll": "will", "he'll": "will", "she'll": "will",
+  "i'd": "would", "you'd": "would", "we'd": "would", "they'd": "would", "he'd": "would", "she'd": "would",
+  "let's": "let", "that's": "that", "there's": "there", "here's": "here", "what's": "what", "who's": "who",
+  "ain't": "be"
+};
 
 const SAMPLE_TEXTS = {
   nyt: {
@@ -31,7 +47,7 @@ function App() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/words.json');
+        const res = await fetch('/words-lemmatized.json');
         const data = await res.json();
         freqRef.current = data;
         setFreqReady(true);
@@ -86,6 +102,22 @@ function App() {
         }
 
         totalWords++;
+
+        // Check if token is a contraction (normalize apostrophe types)
+        const normalizedToken = lowerRaw.replace(/['']/g, "'");
+        const contractionBase = CONTRACTIONS[normalizedToken];
+        if (contractionBase) {
+          // Handle contraction as its base word
+          uniqueWordsSet.add(contractionBase);
+          const rank = freqRef.current[contractionBase];
+          if (rank !== undefined) {
+            wordRanks.push(rank);
+          }
+          // Contractions of common verbs are always known
+          paragraphHtml += `${rawToken} `;
+          continue;
+        }
+
         const subTokens = rawToken.split(/[-–—'']/);
         let blur = false;
         let tokenRank = null;
@@ -93,8 +125,12 @@ function App() {
         for (const sub of subTokens) {
           const clean = sub.toLowerCase().replace(/[^a-z]/g, '');
           if (!clean) continue;
-          uniqueWordsSet.add(clean);
-          const rank = freqRef.current[clean];
+
+          // Get the best lemma form (e.g., "running" → "run")
+          const lemma = getBestLemma(clean, freqRef.current);
+          uniqueWordsSet.add(lemma);
+
+          const rank = freqRef.current[lemma];
           if (rank !== undefined) {
             wordRanks.push(rank);
             if (tokenRank === null || rank > tokenRank) tokenRank = rank;
@@ -284,10 +320,16 @@ function App() {
               </section>
 
               <section className="about-section">
-                <h3>Word Frequency</h3>
+                <h3>Word Frequency & Lemmatization</h3>
                 <p>
                   We use a corpus of word frequencies to estimate which words a reader at each level would know.
                   Words are ranked by how commonly they appear in English text.
+                </p>
+                <p>
+                  To better reflect how vocabulary works, we group inflected forms under their base lemma.
+                  For example, "run," "runs," "running," and "ran" are all counted as knowing "run."
+                  This reduces our dictionary from 333,000 word forms to ~307,000 word families, and means
+                  that knowing a base word extends to its common variations.
                 </p>
                 <p>
                   Our vocabulary thresholds come from <a href="https://www.myvocab.info/en" target="_blank" rel="noopener noreferrer">myvocab.info</a>,
@@ -310,11 +352,13 @@ function App() {
                   This is an approximation, not a precise measurement. The model doesn't account for:
                 </p>
                 <ul>
-                  <li><strong>Word families</strong> — "happy," "unhappy," and "happiness" are treated separately,
-                    though learners often recognize related forms</li>
+                  <li><strong>Derivational forms</strong> — "happy" and "happiness" are treated as separate word families,
+                    though learners may recognize the connection</li>
                   <li><strong>Context</strong> — A word like "bank" has different difficulty depending on meaning</li>
                   <li><strong>Proper nouns</strong> — Names and places may blur even though readers handle them differently</li>
                   <li><strong>Domain knowledge</strong> — A biology student knows "mitochondria" even if it's rare overall</li>
+                  <li><strong>Corpus bias</strong> — Our frequency data comes from written text, so everyday spoken words
+                    (like kitchen vocabulary) may be underrepresented</li>
                 </ul>
               </section>
 
