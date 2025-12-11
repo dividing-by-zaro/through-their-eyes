@@ -188,9 +188,12 @@ function App() {
   return (
     <div className="App">
       <aside className="sidebar">
-        <h1 className="logo">
-          Through <span className="highlight">Their</span> Eyes
-        </h1>
+        <div className="logo-container">
+          <img src="/through-their-eyes-logo.png" alt="Logo" className="logo-image" />
+          <h1 className="logo">
+            Through <span className="highlight">Their</span> Eyes
+          </h1>
+        </div>
 
         <ThresholdSelector
           value={threshold}

@@ -88,16 +88,28 @@ body {
   overflow: hidden;
 }
 
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid rgba(232, 228, 217, 0.15);
+}
+
+.logo-image {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
 .logo {
   font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 400;
   font-style: italic;
   color: var(--chalk);
   margin: 0;
-  padding-bottom: var(--space-md);
-  margin-bottom: var(--space-md);
-  border-bottom: 1px solid rgba(232, 228, 217, 0.15);
   line-height: 1.3;
 }
 

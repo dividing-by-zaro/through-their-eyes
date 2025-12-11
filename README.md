@@ -2,6 +2,8 @@
 
 A reading level visualization tool that helps educators understand how text appears to students with different vocabulary levels. Words outside a student's expected vocabulary are blurred, simulating the reading experience of language learners.
 
+![Through Their Eyes UI](public/through-their-eyes-ui.png)
+
 ## Getting Started
 
 ```bash
