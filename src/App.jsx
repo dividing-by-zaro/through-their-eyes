@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import parse from 'html-react-parser';
+import nlp from 'compromise';
 import ThresholdSelector from './Components/ThresholdSelector.jsx';
 import { getBestLemma, clearLemmaCache } from './utils/lemmatizer.js';
 
@@ -57,7 +58,7 @@ function App() {
   const [view, setView] = useState('teacher'); // 'teacher', 'student', or 'about'
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [stats, setStats] = useState(null);
-  const [corpus, setCorpus] = useState('written'); // 'written' or 'spoken'
+  const [corpus, setCorpus] = useState('spoken'); // 'spoken' or 'written'
 
   const freqWrittenRef = useRef(null);
   const freqSpokenRef = useRef(null);
@@ -111,6 +112,27 @@ function App() {
     const freqDict = getActiveDict(corpusType);
     if (!freqDict) return;
 
+    // Use compromise to detect proper nouns (people, places, organizations)
+    const doc = nlp(input || '');
+    const properNouns = new Set();
+
+    // Extract all proper nouns and normalize them for matching
+    doc.people().forEach(p => {
+      p.text().toLowerCase().split(/\s+/).forEach(word => {
+        properNouns.add(word.replace(/[^a-z]/g, ''));
+      });
+    });
+    doc.places().forEach(p => {
+      p.text().toLowerCase().split(/\s+/).forEach(word => {
+        properNouns.add(word.replace(/[^a-z]/g, ''));
+      });
+    });
+    doc.organizations().forEach(o => {
+      o.text().toLowerCase().split(/\s+/).forEach(word => {
+        properNouns.add(word.replace(/[^a-z]/g, ''));
+      });
+    });
+
     // Split into paragraphs to preserve line breaks
     const paragraphs = (input || '').split(/\n/);
     const processedParagraphs = [];
@@ -119,6 +141,7 @@ function App() {
     let totalWords = 0;
     let knownWords = 0;
     let unknownWords = 0;
+    let properNounCount = 0;
     const uniqueWordsSet = new Set();
     const wordRanks = [];
 
@@ -128,8 +151,19 @@ function App() {
 
       for (const rawToken of roughTokens) {
         const lowerRaw = rawToken.toLowerCase();
+        const cleanLower = lowerRaw.replace(/[^a-z]/g, '');
 
-        if (customWords.has(lowerRaw) || !/[a-z]/i.test(rawToken)) {
+        // Skip non-alphabetic tokens
+        if (!/[a-z]/i.test(rawToken)) {
+          paragraphHtml += `${rawToken} `;
+          continue;
+        }
+
+        // Skip custom words and proper nouns (don't count in stats)
+        if (customWords.has(lowerRaw) || properNouns.has(cleanLower)) {
+          if (properNouns.has(cleanLower)) {
+            properNounCount++;
+          }
           paragraphHtml += `${rawToken} `;
           continue;
         }
@@ -197,7 +231,8 @@ function App() {
       knownWords,
       unknownWords,
       knownPercent,
-      avgRank
+      avgRank,
+      properNounCount
     });
 
     setOutput(processedParagraphs.join('<br/>'));
@@ -245,18 +280,6 @@ function App() {
         <div className="corpus-toggle">
           <span className="corpus-label">Frequency corpus</span>
           <div className="corpus-options">
-            <label className={`corpus-option ${corpus === 'written' ? 'active' : ''}`}>
-              <input
-                type="radio"
-                name="corpus"
-                value="written"
-                checked={corpus === 'written'}
-                onChange={() => handleCorpusChange('written')}
-                disabled={!freqReady}
-              />
-              <span>Written</span>
-              <span className="corpus-hint">307K words</span>
-            </label>
             <label className={`corpus-option ${corpus === 'spoken' ? 'active' : ''}`}>
               <input
                 type="radio"
@@ -268,6 +291,18 @@ function App() {
               />
               <span>Spoken</span>
               <span className="corpus-hint">60K words</span>
+            </label>
+            <label className={`corpus-option ${corpus === 'written' ? 'active' : ''}`}>
+              <input
+                type="radio"
+                name="corpus"
+                value="written"
+                checked={corpus === 'written'}
+                onChange={() => handleCorpusChange('written')}
+                disabled={!freqReady}
+              />
+              <span>Written</span>
+              <span className="corpus-hint">307K words</span>
             </label>
           </div>
         </div>
@@ -366,6 +401,12 @@ function App() {
                       <span className="stat-value">{stats.avgRank.toLocaleString()}</span>
                       <span className="stat-label">Avg. word rank</span>
                     </div>
+                    {stats.properNounCount > 0 && (
+                      <div className="stat stat-muted">
+                        <span className="stat-value">{stats.properNounCount.toLocaleString()}</span>
+                        <span className="stat-label">Names excluded</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -392,8 +433,8 @@ function App() {
                   to simplify language, pre-teach vocabulary, or provide glossaries for challenging terms.
                 </p>
                 <p>
-                  You can also choose between two frequency corpora: <strong>Written</strong> (based on web text, 307K words)
-                  or <strong>Spoken</strong> (based on movie subtitles, 60K words). The spoken corpus better represents
+                  You can also choose between two frequency corpora: <strong><a href="https://www.kaggle.com/datasets/rtatman/english-word-frequency" target="_blank" rel="noopener noreferrer">Written</a></strong> (from Google Web Trillion Word Corpus, 307K words)
+                  or <strong><a href="https://www.kaggle.com/datasets/lukevanhaezebrouck/subtlex-word-frequency" target="_blank" rel="noopener noreferrer">Spoken</a></strong> (from SUBTLEX movie subtitles, 60K words). The spoken corpus better represents
                   everyday conversational vocabulary.
                 </p>
               </section>
@@ -438,9 +479,61 @@ function App() {
                 <ul>
                   <li><strong>Derivational forms</strong> — "happy" and "happiness" are separate word families</li>
                   <li><strong>Context</strong> — "bank" has different difficulty depending on meaning</li>
-                  <li><strong>Proper nouns</strong> — Names and places may blur unexpectedly</li>
                   <li><strong>Domain knowledge</strong> — Specialized terms vary by reader background</li>
                 </ul>
+              </section>
+
+              <section className="about-section">
+                <h3>Frequently Asked Questions</h3>
+
+                <div className="faq-item">
+                  <h4>Why is a common word showing as blurred?</h4>
+                  <p>
+                    Word frequency is based on large text corpora, not intuition. Some words we use daily
+                    in speech are rare in writing (and vice versa). Try switching between the Spoken and
+                    Written corpora to see the difference. Also, technical terms common in your field may
+                    be rare in general usage.
+                  </p>
+                </div>
+
+                <div className="faq-item">
+                  <h4>Should I aim for 100% comprehension?</h4>
+                  <p>
+                    Not necessarily. The 95% threshold represents comfortable independent reading, but some
+                    challenge is healthy for vocabulary growth. For instructional texts where you'll provide
+                    support, 90–95% is reasonable. For independent reading or assessments, aim for 95%+.
+                  </p>
+                </div>
+
+                <div className="faq-item">
+                  <h4>Which corpus should I use—Spoken or Written?</h4>
+                  <p>
+                    <strong>Spoken</strong> (from SUBTLEX movie subtitles) better reflects everyday conversational
+                    vocabulary—good for dialogue, informal texts, or ESL learners focused on communication.
+                    <strong> Written</strong> (from Google's web corpus) captures more formal and varied vocabulary—better
+                    for textbooks, articles, or academic preparation.
+                  </p>
+                </div>
+
+                <div className="faq-item">
+                  <h4>How are names and places handled?</h4>
+                  <p>
+                    We automatically detect proper nouns (people, places, organizations) and exclude them
+                    from the analysis. They appear normally and don't affect your comprehension percentage.
+                    The stats panel shows how many were excluded.
+                  </p>
+                </div>
+
+                <div className="faq-item">
+                  <h4>How should I use this with my students?</h4>
+                  <p>
+                    Use it to preview texts before assigning them, identify vocabulary to pre-teach,
+                    or create differentiated materials. You can also show students the Meaning View
+                    to help them understand why certain texts feel harder—it validates their experience
+                    and shows reading difficulty isn't about intelligence.
+                  </p>
+                </div>
+
               </section>
             </div>
           )}

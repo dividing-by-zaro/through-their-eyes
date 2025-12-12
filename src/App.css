@@ -593,6 +593,10 @@ body {
   letter-spacing: 0.05em;
 }
 
+.stat-muted {
+  opacity: 0.6;
+}
+
 .student-view .output-text {
   flex: 1;
   min-height: 300px;
@@ -744,6 +748,32 @@ body {
 
 .about-section a:hover {
   border-bottom-color: var(--highlight);
+}
+
+/* FAQ styling */
+.faq-item {
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--paper-dark);
+}
+
+.faq-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.faq-item h4 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.faq-item p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
 }
 
 /* =========================================
