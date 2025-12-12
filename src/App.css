@@ -392,10 +392,10 @@ body {
 }
 
 /* =========================================
-   Teacher View
+   Editor View
    ========================================= */
 
-.teacher-view {
+.editor-view {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -439,9 +439,16 @@ body {
   cursor: not-allowed;
 }
 
-.teacher-view textarea {
+/* Editor Split Layout */
+.editor-split {
+  display: flex;
+  gap: var(--space-md);
   flex: 1;
   min-height: 300px;
+}
+
+.editor-split textarea {
+  flex: 1;
   padding: var(--space-md);
   border: 1px solid var(--parchment);
   border-radius: 6px;
@@ -454,27 +461,49 @@ body {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.teacher-view textarea::placeholder {
+.editor-split textarea::placeholder {
   color: var(--pencil);
   font-style: italic;
 }
 
-.teacher-view textarea:focus {
+.editor-split textarea:focus {
   outline: none;
   border-color: var(--highlight);
   box-shadow: 0 0 0 3px var(--highlight-soft);
 }
 
-.teacher-view textarea:disabled {
+.editor-split textarea:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
+.live-preview {
+  flex: 1;
+  padding: var(--space-md);
+  border: 1px solid var(--chalkboard);
+  border-radius: 6px;
+  background: var(--chalkboard);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--chalk);
+  overflow-y: auto;
+}
+
+.preview-text {
+  white-space: pre-wrap;
+}
+
+.preview-placeholder {
+  color: var(--pencil);
+  font-style: italic;
+}
+
 /* =========================================
-   Student View
+   Reader View
    ========================================= */
 
-.student-view {
+.reader-view {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -597,7 +626,7 @@ body {
   opacity: 0.6;
 }
 
-.student-view .output-text {
+.reader-view .output-text {
   flex: 1;
   min-height: 300px;
   padding: var(--space-md);
@@ -611,7 +640,7 @@ body {
   overflow-y: auto;
 }
 
-.student-view .output-text:empty::before {
+.reader-view .output-text:empty::before {
   content: "Their view will appear here...";
   color: rgba(232, 228, 217, 0.4);
   font-style: italic;
@@ -814,6 +843,15 @@ body {
   .threshold-option {
     flex: 1;
     min-width: 120px;
+  }
+
+  .editor-split {
+    flex-direction: column;
+  }
+
+  .editor-split textarea,
+  .live-preview {
+    min-height: 200px;
   }
 }
 

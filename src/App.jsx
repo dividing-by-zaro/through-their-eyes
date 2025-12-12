@@ -53,15 +53,14 @@ function App() {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [threshold, setThreshold] = useState(4150); // B1 default
-  const [isBusy, setIsBusy] = useState(false);
   const [freqReady, setFreqReady] = useState(false);
-  const [view, setView] = useState('teacher'); // 'teacher', 'student', or 'about'
-  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [view, setView] = useState('editor'); // 'editor', 'reader', or 'about'
   const [stats, setStats] = useState(null);
   const [corpus, setCorpus] = useState('spoken'); // 'spoken' or 'written'
 
   const freqWrittenRef = useRef(null);
   const freqSpokenRef = useRef(null);
+  const debounceRef = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -87,33 +86,57 @@ function App() {
     })();
   }, []);
 
-  const handleInputChange = (e) => setInput(e.target.value);
+  // Debounced text processing - waits 300ms after typing stops
+  const processWithDebounce = (text, thresh = threshold, corpusType = corpus) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      processTextWithThreshold(thresh, corpusType, text);
+    }, 300);
+  };
+
+  const handleInputChange = (e) => {
+    const newInput = e.target.value;
+    setInput(newInput);
+    if (newInput.trim() && freqReady) {
+      processWithDebounce(newInput);
+    } else {
+      setOutput('');
+      setStats(null);
+    }
+  };
+
   const loadSampleText = async (key) => {
     try {
       const res = await fetch(SAMPLE_TEXTS[key].file);
       const text = await res.text();
       setInput(text);
+      if (freqReady) {
+        // Process immediately for sample texts
+        processTextWithThreshold(threshold, corpus, text);
+      }
     } catch (err) {
       console.error('Failed to load sample text', err);
     }
   };
+
   const handleThresholdChange = (value) => {
     setThreshold(value);
-    // Re-process if we've already submitted
-    if (hasSubmitted && input.trim()) {
-      processTextWithThreshold(value);
+    if (input.trim() && freqReady) {
+      processTextWithThreshold(value, corpus, input);
     }
   };
 
   // Get the active frequency dictionary based on corpus selection
   const getActiveDict = (corpusType = corpus) => corpusType === 'spoken' ? freqSpokenRef.current : freqWrittenRef.current;
 
-  const processTextWithThreshold = (thresh, corpusType = corpus) => {
+  const processTextWithThreshold = (thresh, corpusType = corpus, text = input) => {
     const freqDict = getActiveDict(corpusType);
-    if (!freqDict) return;
+    if (!freqDict || !text) return;
 
     // Use compromise to detect proper nouns (people, places, organizations)
-    const doc = nlp(input || '');
+    const doc = nlp(text);
     const properNouns = new Set();
 
     // Extract all proper nouns and normalize them for matching
@@ -134,7 +157,7 @@ function App() {
     });
 
     // Split into paragraphs to preserve line breaks
-    const paragraphs = (input || '').split(/\n/);
+    const paragraphs = text.split(/\n/);
     const processedParagraphs = [];
 
     // Stats tracking
@@ -240,24 +263,17 @@ function App() {
 
   const handleCorpusChange = (newCorpus) => {
     setCorpus(newCorpus);
-    if (hasSubmitted && input.trim()) {
-      processTextWithThreshold(threshold, newCorpus);
+    if (input.trim() && freqReady) {
+      processTextWithThreshold(threshold, newCorpus, input);
     }
   };
 
-  const processText = () => {
-    if (!getActiveDict()) return;
-    setIsBusy(true);
-    processTextWithThreshold(threshold);
-    setHasSubmitted(true);
-    setView('student');
-    setIsBusy(false);
+  const switchToReader = () => {
+    if (input.trim() && output) {
+      setView('reader');
+    }
   };
-
-  const switchToTeacher = () => setView('teacher');
-  const switchToStudent = () => {
-    if (hasSubmitted) setView('student');
-  };
+  const switchToEditor = () => setView('editor');
   const switchToAbout = () => setView('about');
 
   return (
@@ -273,7 +289,7 @@ function App() {
         <ThresholdSelector
           value={threshold}
           onChange={handleThresholdChange}
-          isDisabled={isBusy || !freqReady}
+          isDisabled={!freqReady}
         />
 
         {/* Corpus selector */}
@@ -311,19 +327,11 @@ function App() {
       <main className="main-content">
         <div className="view-tabs">
           <button
-            className={`view-tab ${view === 'teacher' ? 'active' : ''}`}
-            onClick={switchToTeacher}
+            className={`view-tab ${view === 'editor' ? 'active' : ''}`}
+            onClick={switchToEditor}
           >
-            <span className="tab-icon teacher">T</span>
-            Text View
-          </button>
-          <button
-            className={`view-tab ${view === 'student' ? 'active' : ''} ${!hasSubmitted ? 'disabled' : ''}`}
-            onClick={switchToStudent}
-            disabled={!hasSubmitted}
-          >
-            <span className="tab-icon student">M</span>
-            Meaning View
+            <span className="tab-icon teacher">E</span>
+            Editor
           </button>
           <button
             className={`view-tab tab-right ${view === 'about' ? 'active' : ''}`}
@@ -335,8 +343,8 @@ function App() {
         </div>
 
         <div className="view-container">
-          {view === 'teacher' && (
-            <div className="teacher-view">
+          {view === 'editor' && (
+            <div className="editor-view">
               <div className="sample-buttons">
                 <span className="sample-label">Try a sample:</span>
                 {Object.entries(SAMPLE_TEXTS).map(([key, { label }]) => (
@@ -350,23 +358,79 @@ function App() {
                   </button>
                 ))}
               </div>
-              <textarea
-                placeholder="Paste or type your text here..."
-                value={input}
-                onChange={handleInputChange}
-                disabled={!freqReady}
-              />
+              <div className="editor-split">
+                <textarea
+                  placeholder="Paste or type your text here..."
+                  value={input}
+                  onChange={handleInputChange}
+                  disabled={!freqReady}
+                />
+                <div className="live-preview">
+                  {output ? (
+                    <div className="preview-text">
+                      {parse(output)}
+                    </div>
+                  ) : (
+                    <div className="preview-placeholder">
+                      Your text will appear here with difficult words blurred...
+                    </div>
+                  )}
+                </div>
+              </div>
+              {stats && (
+                <div className="stats-panel">
+                  <div className="comprehension-bar-container">
+                    <div className="comprehension-label">
+                      <span>Comprehension: <strong>{stats.knownPercent}%</strong> known</span>
+                      <span className={`comprehension-status ${stats.knownPercent >= 95 ? 'pass' : 'fail'}`}>
+                        {stats.knownPercent >= 95 ? '✓ Meets 95% threshold' : '✗ Below 95% threshold'}
+                      </span>
+                    </div>
+                    <div className="comprehension-bar">
+                      <div
+                        className="comprehension-known"
+                        style={{ width: `${stats.knownPercent}%` }}
+                      />
+                      <div
+                        className="comprehension-unknown"
+                        style={{ width: `${100 - stats.knownPercent}%` }}
+                      />
+                      <div className="comprehension-threshold" style={{ left: '95%' }} />
+                    </div>
+                  </div>
+                  <div className="stats-row">
+                    <div className="stat">
+                      <span className="stat-value">{stats.totalWords.toLocaleString()}</span>
+                      <span className="stat-label">Total words</span>
+                    </div>
+                    <div className="stat">
+                      <span className="stat-value">{stats.uniqueWords.toLocaleString()}</span>
+                      <span className="stat-label">Unique words</span>
+                    </div>
+                    <div className="stat">
+                      <span className="stat-value">{stats.avgRank.toLocaleString()}</span>
+                      <span className="stat-label">Avg. word rank</span>
+                    </div>
+                    {stats.properNounCount > 0 && (
+                      <div className="stat stat-muted">
+                        <span className="stat-value">{stats.properNounCount.toLocaleString()}</span>
+                        <span className="stat-label">Names excluded</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               <button
                 className="submit-btn"
-                disabled={isBusy || !freqReady || !input.trim()}
-                onClick={processText}
+                disabled={!freqReady || !output}
+                onClick={switchToReader}
               >
-                {isBusy ? 'Processing...' : 'Show Meaning View'}
+                Reader View
               </button>
             </div>
           )}
-          {view === 'student' && (
-            <div className="student-view">
+          {view === 'reader' && (
+            <div className="reader-view">
               {stats && (
                 <div className="stats-panel">
                   <div className="comprehension-bar-container">
@@ -415,9 +479,9 @@ function App() {
               </div>
               <button
                 className="edit-btn"
-                onClick={switchToTeacher}
+                onClick={switchToEditor}
               >
-                Back to Text
+                Back to Editor
               </button>
             </div>
           )}
@@ -428,9 +492,10 @@ function App() {
               <section className="about-section">
                 <h3>Using This Tool</h3>
                 <p>
-                  Paste your text, select a vocabulary level, and click "Show Meaning View"
-                  to see which words might cause difficulty. Hover over blurred words to reveal them. Use this insight
-                  to simplify language, pre-teach vocabulary, or provide glossaries for challenging terms.
+                  Paste your text and select a vocabulary level—words are blurred instantly as you type.
+                  Hover over blurred words to reveal them. Use this insight to simplify language, pre-teach
+                  vocabulary, or provide glossaries for challenging terms. Click "Reader View" for a
+                  distraction-free reading experience.
                 </p>
                 <p>
                   You can also choose between two frequency corpora: <strong><a href="https://www.kaggle.com/datasets/rtatman/english-word-frequency" target="_blank" rel="noopener noreferrer">Written</a></strong> (from Google Web Trillion Word Corpus, 307K words)
@@ -528,7 +593,7 @@ function App() {
                   <h4>How should I use this with my students?</h4>
                   <p>
                     Use it to preview texts before assigning them, identify vocabulary to pre-teach,
-                    or create differentiated materials. You can also show students the Meaning View
+                    or create differentiated materials. You can also show students the blurred preview
                     to help them understand why certain texts feel harder—it validates their experience
                     and shows reading difficulty isn't about intelligence.
                   </p>
