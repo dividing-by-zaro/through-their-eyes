@@ -16,9 +16,9 @@ npm run dev        # Start Vite dev server (port 5173 or 5174)
 npm run build      # Production build
 npm run preview    # Preview production build
 
-# Build frequency dictionaries (Python/uv)
-uv run python scripts/build_lemma_dict.py     # Build lemmatized written corpus
-uv run python scripts/build_subtlex_dict.py   # Build spoken corpus from SUBTLEX
+# Build frequency dictionaries (Python/uv, run from /scripts)
+cd scripts && uv run python build_lemma_dict.py     # Build lemmatized written corpus
+cd scripts && uv run python build_subtlex_dict.py   # Build spoken corpus from SUBTLEX
 ```
 
 ## Architecture
