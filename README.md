@@ -6,13 +6,15 @@ A reading level visualization tool that helps educators understand how text appe
 
 ## Features
 
-- **Live blur preview** — Words blur instantly as you type (300ms debounce)
+- **Live preview** — Words marked instantly as you type (300ms debounce)
+- **Multiple display modes** — Blur (simulates reading), underline, or highlight unfamiliar words
+- **Collapsible sidebar** — Proficiency levels, sample texts, and view toggle
+- **Two views** — Side-by-side editor or full-screen reader mode
 - **Proper noun detection** — Names, places, and organizations automatically excluded
-- **Two frequency corpora** — Spoken (SUBTLEX movie subtitles) or Written (Google web corpus)
+- **Two frequency corpora** — Spoken (SUBTLEX, default) or Written (web corpus) in Advanced Settings
 - **CEFR vocabulary levels** — A1 through C2 plus Native speaker thresholds
-- **95% comprehension indicator** — Visual bar showing if text meets research threshold
+- **Comprehension indicator** — Visual bar showing if text meets 95% research threshold
 - **Lemmatization** — Groups inflected forms (run/runs/running/ran) under base lemmas
-- **Reader view** — Distraction-free mode for presenting to students
 
 ## Getting Started
 
@@ -35,7 +37,10 @@ npm run dev
 - [x] **Lemmatization** - Group inflected forms under base lemmas
 - [x] **Spoken Corpus** - Add SUBTLEX movie subtitle corpus
 - [x] **Proper Noun Handling** - Detect names, places, organizations via NER
-- [x] **Live Preview** - Instant blur as you type with side-by-side editor
+- [x] **Live Preview** - Instant marking as you type with side-by-side editor
+- [x] **Collapsible Sidebar** - Sidebar sections collapse, entire sidebar can be hidden
+- [x] **Display Modes** - Choose blur, underline, or highlight for unfamiliar words
+- [x] **Advanced Settings** - Modal for display style and frequency dataset options
 - [ ] **Custom Ignore List** - Click on a word to add it to a custom "ignore" list
 - [ ] **AI Simplification** - Use AI to generate a simpler version at selected reading level
 - [ ] **Word Details on Hover** - Show frequency rank and definition when hovering

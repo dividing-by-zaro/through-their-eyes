@@ -87,6 +87,59 @@ body {
   bottom: 0;
   overflow-y: auto;
   overflow-x: visible;
+  transition: width 0.25s ease, min-width 0.25s ease;
+}
+
+.sidebar.collapsed {
+  width: 48px;
+  min-width: 48px;
+  padding: var(--space-md) var(--space-xs);
+  overflow: hidden;
+}
+
+.sidebar.collapsed .sidebar-content {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-sm);
+  width: 28px;
+  height: 28px;
+  background: rgba(232, 228, 217, 0.1);
+  border: none;
+  border-radius: 4px;
+  color: rgba(232, 228, 217, 0.5);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  z-index: 10;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(232, 228, 217, 0.15);
+  color: var(--chalk);
+}
+
+.sidebar.collapsed .sidebar-toggle {
+  right: 50%;
+  transform: translateX(50%);
+}
+
+.App.sidebar-collapsed .main-content {
+  margin-left: 48px;
 }
 
 .logo-container {

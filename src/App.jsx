@@ -57,10 +57,23 @@ function App() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [displayMode, setDisplayMode] = useState('blur'); // 'blur', 'underline', 'highlight'
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const freqWrittenRef = useRef(null);
   const freqSpokenRef = useRef(null);
   const debounceRef = useRef(null);
+
+  // Disable body scroll when modals are open
+  useEffect(() => {
+    if (showAdvanced || showAbout) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showAdvanced, showAbout]);
 
   useEffect(() => {
     (async () => {
@@ -281,14 +294,30 @@ function App() {
   }, [displayMode]);
 
   return (
-    <div className="App">
-      <aside className="sidebar">
-        <div className="logo-container">
-          <img src="/through-their-eyes-logo.png" alt="Logo" className="logo-image" />
-          <h1 className="logo">
-            Through <span className="highlight">Their</span> Eyes
-          </h1>
-        </div>
+    <div className={`App ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+        <button
+          className="sidebar-toggle"
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d={sidebarCollapsed ? "M6 3L11 8L6 13" : "M10 3L5 8L10 13"}
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+        <div className="sidebar-content">
+          <div className="logo-container">
+            <img src="/through-their-eyes-logo.png" alt="Logo" className="logo-image" />
+            <h1 className="logo">
+              Through <span className="highlight">Their</span> Eyes
+            </h1>
+          </div>
 
         <CollapsibleSection
           title="Proficiency level"
@@ -341,13 +370,14 @@ function App() {
           </div>
         </CollapsibleSection>
 
-        <div className="sidebar-buttons">
-          <button className="sidebar-btn" onClick={() => setShowAdvanced(true)}>
-            Advanced Settings
-          </button>
-          <button className="sidebar-btn" onClick={() => setShowAbout(true)}>
-            About this tool
-          </button>
+          <div className="sidebar-buttons">
+            <button className="sidebar-btn" onClick={() => setShowAdvanced(true)}>
+              Advanced Settings
+            </button>
+            <button className="sidebar-btn" onClick={() => setShowAbout(true)}>
+              About this tool
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -468,8 +498,7 @@ function App() {
               <div className="setting-group">
                 <span className="setting-label">Display style for unfamiliar words</span>
                 <p className="setting-description">
-                  Choose how unfamiliar words appear. Blur simulates the reading experience.
-                  Underline and highlight make words readable while still marking them.
+                  Blur simulates the reading experience. Underline and highlight keep words readable while marking them.
                 </p>
                 <div className="display-mode-preview">
                   <span>The cat sat on the </span>
@@ -514,10 +543,9 @@ function App() {
               </div>
 
               <div className="setting-group">
-                <span className="setting-label">Frequency corpus</span>
+                <span className="setting-label">Word frequency dataset</span>
                 <p className="setting-description">
-                  Choose the word frequency source. Spoken uses movie subtitles (everyday vocabulary).
-                  Written uses web text (more formal vocabulary).
+                  Spoken frequencies are best for most applications, and are derived from a dataset of movie subtitles. Written frequencies may be better for academic applications.
                 </p>
                 <div className="corpus-options">
                   <label className={`corpus-option ${corpus === 'spoken' ? 'active' : ''}`}>

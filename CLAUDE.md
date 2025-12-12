@@ -28,7 +28,8 @@ uv run python scripts/build_subtlex_dict.py   # Build spoken corpus from SUBTLEX
 **Key Files:**
 - `src/App.jsx` - Main application with text processing, corpus selection, and UI
 - `src/App.css` - Styling with warm scholarly theme (Fraunces + Source Serif fonts)
-- `src/Components/ThresholdSelector.jsx` - CEFR level selector (A1-C2 + Native)
+- `src/Components/ThresholdSelector.jsx` - Proficiency level selector (A1-C2 + Native)
+- `src/Components/CollapsibleSection.jsx` - Reusable collapsible sidebar sections
 - `src/utils/lemmatizer.js` - Runtime lemmatization with caching
 
 **Frequency Data (in `/public/`):**
@@ -42,17 +43,17 @@ uv run python scripts/build_subtlex_dict.py   # Build spoken corpus from SUBTLEX
 ## Data Flow
 
 1. Both frequency corpora load on startup (`freqWrittenRef`, `freqSpokenRef`)
-2. User selects CEFR level (threshold) and corpus type (Spoken/Written)
-3. User inputs text or loads a sample
+2. User selects proficiency level (threshold) and optionally changes corpus in Advanced Settings
+3. User inputs text or loads a sample from the sidebar
 4. Text processing (debounced 300ms after typing):
    - Proper nouns detected via compromise.js (people, places, organizations) and excluded
    - Em/en dashes split into separate tokens
    - Contractions expanded to base verbs (aren't → are)
    - Words lemmatized via wink-lemmatizer (running → run)
    - Rank looked up in selected corpus
-   - Words above threshold or not found → blurred
-5. Stats calculated: total words, unique words, known %, avg rank, proper nouns excluded
-6. Live preview rendered with blur effect on unknown words
+   - Words above threshold or not found → marked as unfamiliar
+5. Stats calculated: total words, unique words, comprehension %, proper nouns excluded
+6. Live preview rendered with selected display style (blur, underline, or highlight)
 
 ## CEFR Thresholds (from myvocab.info)
 
@@ -68,25 +69,30 @@ uv run python scripts/build_subtlex_dict.py   # Build spoken corpus from SUBTLEX
 
 ## Key Features
 
-- **Live blur preview**: Words blur instantly as you type (300ms debounce)
+- **Live preview**: Words marked instantly as you type (300ms debounce)
+- **Display modes**: Blur (simulates reading), underline (spell-check style), or highlight
+- **Collapsible sidebar**: Proficiency levels, sample texts, view toggle; can be collapsed
+- **View toggle**: Side-by-side editor or full-screen reader view
 - **Proper noun detection**: Names, places, organizations excluded via compromise.js NER
 - **Lemmatization**: Groups inflected forms (run/runs/running/ran) under base lemma
-- **Two corpora**: Spoken (default, movie subtitles) vs Written (Google web corpus)
+- **Two corpora**: Spoken (default, movie subtitles) vs Written (web corpus) in Advanced Settings
 - **Contraction handling**: Maps contractions to base verbs
 - **Em-dash handling**: Splits "word—word" into separate tokens
-- **95% comprehension bar**: Visual indicator of whether text meets research threshold
-- **Custom CEFR tooltips**: Hover info icons for level descriptions
-- **Sample texts**: Science, history, biology, literature, news, gaming
-- **Hover reveal**: Blurred words reveal on hover
-- **Reader view**: Distraction-free view for presenting to students
+- **Comprehension bar**: Visual indicator of whether text meets 95% research threshold
+- **Proficiency tooltips**: Hover info icons for CEFR level descriptions
+- **Sample texts**: History, biology, literature, news, gaming
+- **Hover reveal**: Marked words reveal on hover
+- **Advanced Settings modal**: Display style and word frequency dataset options
+- **About modal**: Documentation and FAQ
 
 ## Styling
 
 - Warm scholarly theme with paper textures
-- Dark sidebar with CEFR level cards and custom tooltips
-- Corpus toggle (Spoken/Written) in sidebar
-- Side-by-side editor with live blur preview
-- Comprehension bar with 95% threshold marker (blue/orange colorblind-friendly)
+- Collapsible dark sidebar with proficiency level cards and custom tooltips
+- Collapsible sections for proficiency, samples, and view toggle
+- Side-by-side editor with live preview (blur/underline/highlight modes)
+- Compact stats bar with comprehension indicator
+- Advanced Settings and About modals
 
 ## TODO
 
