@@ -57,6 +57,7 @@ function App() {
   const [view, setView] = useState('editor'); // 'editor', 'reader', or 'about'
   const [stats, setStats] = useState(null);
   const [corpus, setCorpus] = useState('spoken'); // 'spoken' or 'written'
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const freqWrittenRef = useRef(null);
   const freqSpokenRef = useRef(null);
@@ -293,40 +294,14 @@ function App() {
           isDisabled={!freqReady}
         />
 
-        {/* Corpus selector */}
-        <div className="corpus-toggle">
-          <span className="corpus-label">Frequency corpus</span>
-          <div className="corpus-options">
-            <label className={`corpus-option ${corpus === 'spoken' ? 'active' : ''}`}>
-              <input
-                type="radio"
-                name="corpus"
-                value="spoken"
-                checked={corpus === 'spoken'}
-                onChange={() => handleCorpusChange('spoken')}
-                disabled={!freqReady}
-              />
-              <span>Spoken</span>
-              <span className="corpus-hint">60K words</span>
-            </label>
-            <label className={`corpus-option ${corpus === 'written' ? 'active' : ''}`}>
-              <input
-                type="radio"
-                name="corpus"
-                value="written"
-                checked={corpus === 'written'}
-                onChange={() => handleCorpusChange('written')}
-                disabled={!freqReady}
-              />
-              <span>Written</span>
-              <span className="corpus-hint">307K words</span>
-            </label>
-          </div>
+        <div className="sidebar-buttons">
+          <button className="sidebar-btn" onClick={() => setShowAdvanced(true)}>
+            Advanced Settings
+          </button>
+          <button className="sidebar-btn" onClick={view === 'about' ? switchToEditor : switchToAbout}>
+            {view === 'about' ? '← Back to Editor' : 'About this tool'}
+          </button>
         </div>
-
-        <button className="about-link" onClick={view === 'about' ? switchToEditor : switchToAbout}>
-          {view === 'about' ? '← Back to Editor' : 'About this tool'}
-        </button>
       </aside>
 
       <main className="main-content">
@@ -592,6 +567,53 @@ function App() {
           )}
         </div>
       </main>
+
+      {/* Advanced Settings Modal */}
+      {showAdvanced && (
+        <div className="modal-overlay" onClick={() => setShowAdvanced(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Advanced Settings</h2>
+              <button className="modal-close" onClick={() => setShowAdvanced(false)}>×</button>
+            </div>
+            <div className="modal-content">
+              <div className="setting-group">
+                <span className="setting-label">Frequency corpus</span>
+                <p className="setting-description">
+                  Choose the word frequency source. Spoken uses movie subtitles (everyday vocabulary).
+                  Written uses web text (more formal vocabulary).
+                </p>
+                <div className="corpus-options">
+                  <label className={`corpus-option ${corpus === 'spoken' ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="corpus"
+                      value="spoken"
+                      checked={corpus === 'spoken'}
+                      onChange={() => handleCorpusChange('spoken')}
+                      disabled={!freqReady}
+                    />
+                    <span>Spoken</span>
+                    <span className="corpus-hint">60K words</span>
+                  </label>
+                  <label className={`corpus-option ${corpus === 'written' ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="corpus"
+                      value="written"
+                      checked={corpus === 'written'}
+                      onChange={() => handleCorpusChange('written')}
+                      disabled={!freqReady}
+                    />
+                    <span>Written</span>
+                    <span className="corpus-hint">307K words</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
