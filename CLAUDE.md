@@ -23,7 +23,7 @@ uv run python scripts/build_subtlex_dict.py   # Build spoken corpus from SUBTLEX
 
 ## Architecture
 
-**Stack:** React 18 + Vite 4 + wink-lemmatizer
+**Stack:** React 18 + Vite 4 + wink-lemmatizer + compromise (NER)
 
 **Key Files:**
 - `src/App.jsx` - Main application with text processing, corpus selection, and UI
@@ -42,15 +42,17 @@ uv run python scripts/build_subtlex_dict.py   # Build spoken corpus from SUBTLEX
 ## Data Flow
 
 1. Both frequency corpora load on startup (`freqWrittenRef`, `freqSpokenRef`)
-2. User selects CEFR level (threshold) and corpus type (Written/Spoken)
+2. User selects CEFR level (threshold) and corpus type (Spoken/Written)
 3. User inputs text or loads a sample
-4. Text processing:
+4. Text processing (debounced 300ms after typing):
+   - Proper nouns detected via compromise.js (people, places, organizations) and excluded
+   - Em/en dashes split into separate tokens
    - Contractions expanded to base verbs (aren't → are)
    - Words lemmatized via wink-lemmatizer (running → run)
    - Rank looked up in selected corpus
    - Words above threshold or not found → blurred
-5. Stats calculated: total words, unique words, known %, avg rank
-6. Output rendered with blur effect on unknown words
+5. Stats calculated: total words, unique words, known %, avg rank, proper nouns excluded
+6. Live preview rendered with blur effect on unknown words
 
 ## CEFR Thresholds (from myvocab.info)
 
@@ -66,23 +68,28 @@ uv run python scripts/build_subtlex_dict.py   # Build spoken corpus from SUBTLEX
 
 ## Key Features
 
+- **Live blur preview**: Words blur instantly as you type (300ms debounce)
+- **Proper noun detection**: Names, places, organizations excluded via compromise.js NER
 - **Lemmatization**: Groups inflected forms (run/runs/running/ran) under base lemma
-- **Two corpora**: Written (formal text) vs Spoken (movie subtitles for everyday vocab)
+- **Two corpora**: Spoken (default, movie subtitles) vs Written (Google web corpus)
 - **Contraction handling**: Maps contractions to base verbs
+- **Em-dash handling**: Splits "word—word" into separate tokens
 - **95% comprehension bar**: Visual indicator of whether text meets research threshold
+- **Custom CEFR tooltips**: Hover info icons for level descriptions
 - **Sample texts**: Science, history, biology, literature, news, gaming
 - **Hover reveal**: Blurred words reveal on hover
+- **Reader view**: Distraction-free view for presenting to students
 
 ## Styling
 
 - Warm scholarly theme with paper textures
-- Dark sidebar with CEFR level cards
-- Corpus toggle (Written/Spoken) at bottom of sidebar
+- Dark sidebar with CEFR level cards and custom tooltips
+- Corpus toggle (Spoken/Written) in sidebar
+- Side-by-side editor with live blur preview
 - Comprehension bar with 95% threshold marker (blue/orange colorblind-friendly)
 
-## TODO (from README)
+## TODO
 
-- [ ] Proper noun handling
 - [ ] Custom ignore list (click to add words)
 - [ ] AI simplification
 - [ ] Word details on hover

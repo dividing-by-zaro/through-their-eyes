@@ -59,10 +59,15 @@ function ThresholdSelector({ value, onChange, isDisabled }) {
               onChange={() => onChange(t.value)}
               disabled={isDisabled}
             />
-            <label htmlFor={`thresh-${t.value}`} title={t.tooltip || ''}>
+            <label htmlFor={`thresh-${t.value}`}>
               <span className="threshold-name">{t.name}</span>
               <span className="threshold-words">{t.description}</span>
-              {t.tooltip && <span className="threshold-hint">ⓘ</span>}
+              {t.tooltip && (
+                <span className="threshold-hint">
+                  ⓘ
+                  <span className="tooltip">{t.tooltip}</span>
+                </span>
+              )}
             </label>
           </div>
         ))}

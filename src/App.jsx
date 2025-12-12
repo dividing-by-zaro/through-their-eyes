@@ -169,7 +169,8 @@ function App() {
     const wordRanks = [];
 
     for (const paragraph of paragraphs) {
-      const roughTokens = paragraph.split(/\s+/).filter(Boolean);
+      // Split on whitespace and em/en dashes, keeping the dashes as separate tokens
+      const roughTokens = paragraph.split(/(\s+|(?=[—–])|(?<=[—–]))/).filter(Boolean);
       let paragraphHtml = '';
 
       for (const rawToken of roughTokens) {
@@ -322,26 +323,13 @@ function App() {
             </label>
           </div>
         </div>
+
+        <button className="about-link" onClick={view === 'about' ? switchToEditor : switchToAbout}>
+          {view === 'about' ? '← Back to Editor' : 'About this tool'}
+        </button>
       </aside>
 
       <main className="main-content">
-        <div className="view-tabs">
-          <button
-            className={`view-tab ${view === 'editor' ? 'active' : ''}`}
-            onClick={switchToEditor}
-          >
-            <span className="tab-icon teacher">E</span>
-            Editor
-          </button>
-          <button
-            className={`view-tab tab-right ${view === 'about' ? 'active' : ''}`}
-            onClick={switchToAbout}
-          >
-            <span className="tab-icon about">?</span>
-            About
-          </button>
-        </div>
-
         <div className="view-container">
           {view === 'editor' && (
             <div className="editor-view">
