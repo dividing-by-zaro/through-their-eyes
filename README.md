@@ -8,13 +8,15 @@ A reading level visualization tool that helps educators understand how text appe
 
 - **Live preview** — Words marked instantly as you type (300ms debounce)
 - **Multiple display modes** — Blur (simulates reading), underline, or highlight unfamiliar words
-- **Collapsible sidebar** — Proficiency levels, sample texts, and view toggle
-- **Two views** — Side-by-side editor or full-screen reader mode
+- **PDF Export** — Download highlighted text or vocab list as PDF
+- **Focused sidebar** — Proficiency level selector always visible; collapsible
+- **Two views** — Side-by-side editor or full-screen reader mode (toggle in stats bar)
 - **Proper noun detection** — Names, places, and organizations automatically excluded
 - **Two frequency corpora** — Spoken (SUBTLEX, default) or Written (web corpus) in Advanced Settings
 - **CEFR vocabulary levels** — A1 through C2 plus Native speaker thresholds
 - **Comprehension indicator** — Visual bar showing if text meets 95% research threshold
 - **Lemmatization** — Groups inflected forms (run/runs/running/ran) under base lemmas
+- **Sample texts** — Inline links in empty textarea to load example content
 
 ## Getting Started
 
@@ -41,6 +43,8 @@ npm run dev
 - [x] **Collapsible Sidebar** - Sidebar sections collapse, entire sidebar can be hidden
 - [x] **Display Modes** - Choose blur, underline, or highlight for unfamiliar words
 - [x] **Advanced Settings** - Modal for display style and frequency dataset options
+- [x] **PDF Export** - Download highlighted text or vocab list as PDF
+- [x] **Sidebar Redesign** - Focused sidebar with proficiency selector; view/export in stats bar
 - [ ] **Custom Ignore List** - Click on a word to add it to a custom "ignore" list
 - [ ] **AI Simplification** - Use AI to generate a simpler version at selected reading level
 - [ ] **Word Details on Hover** - Show frequency rank and definition when hovering

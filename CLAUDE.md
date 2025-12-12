@@ -23,7 +23,7 @@ uv run python scripts/build_subtlex_dict.py   # Build spoken corpus from SUBTLEX
 
 ## Architecture
 
-**Stack:** React 18 + Vite 4 + wink-lemmatizer + compromise (NER)
+**Stack:** React 18 + Vite 4 + wink-lemmatizer + compromise (NER) + jsPDF (export)
 
 **Key Files:**
 - `src/App.jsx` - Main application with text processing, corpus selection, and UI
@@ -44,7 +44,7 @@ uv run python scripts/build_subtlex_dict.py   # Build spoken corpus from SUBTLEX
 
 1. Both frequency corpora load on startup (`freqWrittenRef`, `freqSpokenRef`)
 2. User selects proficiency level (threshold) and optionally changes corpus in Advanced Settings
-3. User inputs text or loads a sample from the sidebar
+3. User inputs text or clicks sample text links in empty textarea
 4. Text processing (debounced 300ms after typing):
    - Proper nouns detected via compromise.js (people, places, organizations) and excluded
    - Em/en dashes split into separate tokens
@@ -52,8 +52,9 @@ uv run python scripts/build_subtlex_dict.py   # Build spoken corpus from SUBTLEX
    - Words lemmatized via wink-lemmatizer (running → run)
    - Rank looked up in selected corpus
    - Words above threshold or not found → marked as unfamiliar
-5. Stats calculated: total words, unique words, comprehension %, proper nouns excluded
+5. Stats calculated: total words, unique words, comprehension %
 6. Live preview rendered with selected display style (blur, underline, or highlight)
+7. Export options: Download highlighted text PDF or vocab list PDF via jsPDF
 
 ## CEFR Thresholds (from myvocab.info)
 
@@ -71,16 +72,17 @@ uv run python scripts/build_subtlex_dict.py   # Build spoken corpus from SUBTLEX
 
 - **Live preview**: Words marked instantly as you type (300ms debounce)
 - **Display modes**: Blur (simulates reading), underline (spell-check style), or highlight
-- **Collapsible sidebar**: Proficiency levels, sample texts, view toggle; can be collapsed
-- **View toggle**: Side-by-side editor or full-screen reader view
+- **Focused sidebar**: Proficiency level selector always visible; collapsible sidebar
+- **View toggle**: Icon buttons in stats bar for side-by-side or full-screen view
+- **PDF Export**: Download highlighted text or vocab list as PDF (jsPDF)
 - **Proper noun detection**: Names, places, organizations excluded via compromise.js NER
 - **Lemmatization**: Groups inflected forms (run/runs/running/ran) under base lemma
 - **Two corpora**: Spoken (default, movie subtitles) vs Written (web corpus) in Advanced Settings
 - **Contraction handling**: Maps contractions to base verbs
 - **Em-dash handling**: Splits "word—word" into separate tokens
-- **Comprehension bar**: Visual indicator of whether text meets 95% research threshold
+- **Comprehension bar**: Responsive bar showing if text meets 95% research threshold
 - **Proficiency tooltips**: Hover info icons for CEFR level descriptions
-- **Sample texts**: History, biology, literature, news, gaming
+- **Sample texts**: Inline links in empty textarea (History, Biology, Literature, News, Gaming)
 - **Hover reveal**: Marked words reveal on hover
 - **Advanced Settings modal**: Display style and word frequency dataset options
 - **About modal**: Documentation and FAQ
@@ -88,10 +90,10 @@ uv run python scripts/build_subtlex_dict.py   # Build spoken corpus from SUBTLEX
 ## Styling
 
 - Warm scholarly theme with paper textures
-- Collapsible dark sidebar with proficiency level cards and custom tooltips
-- Collapsible sections for proficiency, samples, and view toggle
+- Focused dark sidebar with proficiency level cards and tooltips
+- Compact stats bar with view toggle icons, export buttons, and comprehension bar
 - Side-by-side editor with live preview (blur/underline/highlight modes)
-- Compact stats bar with comprehension indicator
+- Sample text suggestions appear in empty textarea
 - Advanced Settings and About modals
 
 ## TODO

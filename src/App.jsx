@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import parse from 'html-react-parser';
 import nlp from 'compromise';
+import { jsPDF } from 'jspdf';
 import ThresholdSelector, { THRESHOLDS } from './Components/ThresholdSelector.jsx';
 import CollapsibleSection from './Components/CollapsibleSection.jsx';
 import { getBestLemma, clearLemmaCache } from './utils/lemmatizer.js';
@@ -58,6 +59,7 @@ function App() {
   const [showAbout, setShowAbout] = useState(false);
   const [displayMode, setDisplayMode] = useState('blur'); // 'blur', 'underline', 'highlight'
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [unknownWordsList, setUnknownWordsList] = useState([]); // List of unique unknown words
 
   const freqWrittenRef = useRef(null);
   const freqSpokenRef = useRef(null);
@@ -117,6 +119,7 @@ function App() {
     } else {
       setOutput('');
       setStats(null);
+      setUnknownWordsList([]);
     }
   };
 
@@ -180,6 +183,7 @@ function App() {
     let properNounCount = 0;
     const uniqueWordsSet = new Set();
     const wordRanks = [];
+    const unknownWordsSet = new Set(); // Track unique unknown words for export
 
     for (const paragraph of paragraphs) {
       // Split on whitespace and em/en dashes, keeping the dashes as separate tokens
@@ -246,6 +250,9 @@ function App() {
 
         if (blur) {
           unknownWords++;
+          // Track the cleaned word for export (lowercase, letters only)
+          const cleanWord = rawToken.toLowerCase().replace(/[^a-z]/g, '');
+          if (cleanWord) unknownWordsSet.add(cleanWord);
         } else {
           knownWords++;
         }
@@ -272,6 +279,9 @@ function App() {
       properNounCount
     });
 
+    // Update unknown words list for export (sorted alphabetically)
+    setUnknownWordsList(Array.from(unknownWordsSet).sort());
+
     setOutput(processedParagraphs.join('<br/>'));
   };
 
@@ -293,6 +303,244 @@ function App() {
     }
   }, [displayMode]);
 
+  // Export highlighted text as PDF
+  const exportHighlightedPDF = () => {
+    if (!input.trim() || !stats) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const maxWidth = pageWidth - margin * 2;
+    let yPosition = margin;
+
+    // Get current proficiency level name
+    const levelName = THRESHOLDS.find(t => t.value === threshold)?.name || 'Unknown';
+
+    // Title
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Reading Level Analysis - ${levelName}`, margin, yPosition);
+    yPosition += 10;
+
+    // Stats summary
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text(`${stats.knownPercent}% comprehension | ${stats.unknownWords} vocabulary words | ${stats.totalWords} total words`, margin, yPosition);
+    yPosition += 15;
+
+    // Reset text color
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(11);
+
+    // Detect proper nouns using compromise (same as main processing)
+    const doc_nlp = nlp(input);
+    const properNouns = new Set();
+    doc_nlp.people().forEach(p => {
+      p.text().toLowerCase().split(/\s+/).forEach(word => {
+        properNouns.add(word.replace(/[^a-z]/g, ''));
+      });
+    });
+    doc_nlp.places().forEach(p => {
+      p.text().toLowerCase().split(/\s+/).forEach(word => {
+        properNouns.add(word.replace(/[^a-z]/g, ''));
+      });
+    });
+    doc_nlp.organizations().forEach(o => {
+      o.text().toLowerCase().split(/\s+/).forEach(word => {
+        properNouns.add(word.replace(/[^a-z]/g, ''));
+      });
+    });
+
+    // Process text - split into paragraphs
+    const paragraphs = input.split(/\n/);
+    const freqDict = getActiveDict(corpus);
+
+    for (const paragraph of paragraphs) {
+      if (!paragraph.trim()) {
+        yPosition += 5;
+        continue;
+      }
+
+      const tokens = paragraph.split(/(\s+)/).filter(Boolean);
+      let lineText = '';
+      let lineSegments = []; // Track segments with their styling
+
+      for (const token of tokens) {
+        if (/^\s+$/.test(token)) {
+          lineText += ' ';
+          lineSegments.push({ text: ' ', unknown: false });
+          continue;
+        }
+
+        const cleanLower = token.toLowerCase().replace(/[^a-z]/g, '');
+        if (!cleanLower) {
+          lineText += token;
+          lineSegments.push({ text: token, unknown: false });
+          continue;
+        }
+
+        // Skip proper nouns and custom words (treat as known)
+        if (properNouns.has(cleanLower) || customWords.has(token.toLowerCase())) {
+          lineText += token;
+          lineSegments.push({ text: token, unknown: false });
+          continue;
+        }
+
+        // Check if word is unknown
+        const lemma = getBestLemma(cleanLower, freqDict);
+        const rank = freqDict[lemma];
+        const isUnknown = rank === undefined || rank > threshold;
+
+        lineText += token;
+        lineSegments.push({ text: token, unknown: isUnknown });
+      }
+
+      // Render the paragraph with styling
+      const words = lineSegments;
+      let currentX = margin;
+      let currentLine = [];
+
+      for (const segment of words) {
+        const textWidth = doc.getTextWidth(segment.text);
+
+        // Check if we need a new line
+        if (currentX + textWidth > pageWidth - margin && currentLine.length > 0) {
+          // Render current line
+          let renderX = margin;
+          for (const seg of currentLine) {
+            if (seg.unknown) {
+              if (displayMode === 'highlight') {
+                // Yellow highlight background
+                const segWidth = doc.getTextWidth(seg.text);
+                doc.setFillColor(255, 255, 0);
+                doc.rect(renderX, yPosition - 3.5, segWidth, 5, 'F');
+                doc.setTextColor(0, 0, 0);
+              } else {
+                // Underline (for blur or underline mode)
+                doc.setTextColor(180, 0, 0);
+              }
+            } else {
+              doc.setTextColor(0, 0, 0);
+            }
+            doc.text(seg.text, renderX, yPosition);
+            if (seg.unknown && displayMode !== 'highlight') {
+              // Draw underline
+              const segWidth = doc.getTextWidth(seg.text);
+              doc.setDrawColor(180, 0, 0);
+              doc.line(renderX, yPosition + 1, renderX + segWidth, yPosition + 1);
+            }
+            renderX += doc.getTextWidth(seg.text);
+          }
+          yPosition += 6;
+          currentLine = [];
+          currentX = margin;
+
+          // Check for page break
+          if (yPosition > pageHeight - margin) {
+            doc.addPage();
+            yPosition = margin;
+          }
+        }
+
+        currentLine.push(segment);
+        currentX += textWidth;
+      }
+
+      // Render remaining line
+      if (currentLine.length > 0) {
+        let renderX = margin;
+        for (const seg of currentLine) {
+          if (seg.unknown) {
+            if (displayMode === 'highlight') {
+              const segWidth = doc.getTextWidth(seg.text);
+              doc.setFillColor(255, 255, 0);
+              doc.rect(renderX, yPosition - 3.5, segWidth, 5, 'F');
+              doc.setTextColor(0, 0, 0);
+            } else {
+              doc.setTextColor(180, 0, 0);
+            }
+          } else {
+            doc.setTextColor(0, 0, 0);
+          }
+          doc.text(seg.text, renderX, yPosition);
+          if (seg.unknown && displayMode !== 'highlight') {
+            const segWidth = doc.getTextWidth(seg.text);
+            doc.setDrawColor(180, 0, 0);
+            doc.line(renderX, yPosition + 1, renderX + segWidth, yPosition + 1);
+          }
+          renderX += doc.getTextWidth(seg.text);
+        }
+        yPosition += 8;
+      }
+
+      // Check for page break
+      if (yPosition > pageHeight - margin) {
+        doc.addPage();
+        yPosition = margin;
+      }
+    }
+
+    doc.save(`reading-analysis-${levelName.toLowerCase()}.pdf`);
+  };
+
+  // Export word list as PDF
+  const exportWordListPDF = () => {
+    if (!unknownWordsList.length) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    let yPosition = margin;
+
+    // Get current proficiency level name
+    const levelName = THRESHOLDS.find(t => t.value === threshold)?.name || 'Unknown';
+
+    // Title
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Vocab List - ${levelName}`, margin, yPosition);
+    yPosition += 10;
+
+    // Count
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text(`${unknownWordsList.length} vocabulary words`, margin, yPosition);
+    yPosition += 15;
+
+    // Reset styling
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(11);
+
+    // List words in columns
+    const columnWidth = (pageWidth - margin * 2) / 3;
+    let column = 0;
+    const startY = yPosition;
+
+    for (const word of unknownWordsList) {
+      const xPos = margin + column * columnWidth;
+
+      doc.text(`• ${word}`, xPos, yPosition);
+
+      column++;
+      if (column >= 3) {
+        column = 0;
+        yPosition += 6;
+
+        // Check for page break
+        if (yPosition > pageHeight - margin) {
+          doc.addPage();
+          yPosition = margin;
+        }
+      }
+    }
+
+    doc.save(`vocab-list-${levelName.toLowerCase()}.pdf`);
+  };
+
   return (
     <div className={`App ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
@@ -312,63 +560,23 @@ function App() {
           </svg>
         </button>
         <div className="sidebar-content">
-          <div className="logo-container">
-            <img src="/through-their-eyes-logo.png" alt="Logo" className="logo-image" />
-            <h1 className="logo">
-              Through <span className="highlight">Their</span> Eyes
-            </h1>
+          <div className="sidebar-header">
+            <div className="logo-container">
+              <img src="/through-their-eyes-logo.png" alt="Logo" className="logo-image" />
+              <h1 className="logo">
+                Through <span className="highlight">Their</span> Eyes
+              </h1>
+            </div>
           </div>
 
-        <CollapsibleSection
-          title="Proficiency level"
-          summary={THRESHOLDS.find(t => t.value === threshold)?.name}
-        >
+        <div className="proficiency-section">
+          <h2 className="section-title">Proficiency level</h2>
           <ThresholdSelector
             value={threshold}
             onChange={handleThresholdChange}
             isDisabled={!freqReady}
           />
-        </CollapsibleSection>
-
-        <CollapsibleSection
-          title="Sample texts"
-          defaultExpanded={false}
-        >
-          <div className="sample-list">
-            {Object.entries(SAMPLE_TEXTS).map(([key, { label }]) => (
-              <button
-                key={key}
-                className="sample-item"
-                onClick={() => loadSampleText(key)}
-                disabled={!freqReady}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </CollapsibleSection>
-
-        <CollapsibleSection
-          title="View"
-          summary={view === 'editor' ? 'Side by side' : 'Full screen'}
-          defaultExpanded={false}
-        >
-          <div className="view-toggle">
-            <button
-              className={`view-toggle-btn ${view === 'editor' ? 'active' : ''}`}
-              onClick={() => setView('editor')}
-            >
-              Side by side
-            </button>
-            <button
-              className={`view-toggle-btn ${view === 'reader' ? 'active' : ''}`}
-              onClick={() => setView('reader')}
-              disabled={!output}
-            >
-              Full screen
-            </button>
-          </div>
-        </CollapsibleSection>
+        </div>
 
           <div className="sidebar-buttons">
             <button className="sidebar-btn" onClick={() => setShowAdvanced(true)}>
@@ -386,47 +594,111 @@ function App() {
           {view === 'editor' && (
             <div className="editor-view">
               <div className="stats-bar">
-                <div className="stats-row">
-                  <div className="stat">
-                    <span className="stat-value">{stats?.totalWords?.toLocaleString() ?? 0}</span>
-                    <span className="stat-label">Total words</span>
-                  </div>
-                  <div className="stat">
-                    <span className="stat-value">{stats?.uniqueWords?.toLocaleString() ?? 0}</span>
-                    <span className="stat-label">Unique words</span>
-                  </div>
-                  <div className="stat">
-                    <span className="stat-value">{stats?.properNounCount?.toLocaleString() ?? 0}</span>
-                    <span className="stat-label">Names excluded</span>
-                  </div>
-                </div>
-                {stats && (
-                  <div className="comprehension-section">
-                    <span className={`comprehension-status ${stats.knownPercent >= 95 ? 'pass' : 'fail'}`}>
-                      <strong>{stats.knownPercent}%</strong> comprehension
-                      {stats.knownPercent >= 95 ? ' ✓' : ''}
-                    </span>
-                    <div className="comprehension-bar">
-                      <div
-                        className="comprehension-known"
-                        style={{ width: `${stats.knownPercent}%` }}
-                      />
-                      <div
-                        className="comprehension-unknown"
-                        style={{ width: `${100 - stats.knownPercent}%` }}
-                      />
-                      <div className="comprehension-threshold" style={{ left: '95%' }} />
+                <div className="stats-left">
+                  <div className="stats-row">
+                    <div className="stat">
+                      <span className="stat-value">{stats?.totalWords?.toLocaleString() ?? 0}</span>
+                      <span className="stat-label">Total words</span>
+                    </div>
+                    <div className="stat">
+                      <span className="stat-value">{stats?.uniqueWords?.toLocaleString() ?? 0}</span>
+                      <span className="stat-label">Unique words</span>
                     </div>
                   </div>
-                )}
+                  {stats && (
+                    <div className="comprehension-section">
+                      <div className={`stat stat-comprehension ${stats.knownPercent >= 95 ? 'pass' : 'fail'}`}>
+                        <span className="stat-value">{stats.knownPercent}%</span>
+                        <span className="stat-label">comprehension{stats.knownPercent >= 95 ? ' ✓' : ''}</span>
+                      </div>
+                      <div className="comprehension-bar">
+                        <div
+                          className="comprehension-known"
+                          style={{ width: `${stats.knownPercent}%` }}
+                        />
+                        <div
+                          className="comprehension-unknown"
+                          style={{ width: `${100 - stats.knownPercent}%` }}
+                        />
+                        <div className="comprehension-threshold" style={{ left: '95%' }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="stats-actions">
+                  <div className="view-toggle-icons">
+                    <button
+                      className={`view-icon-btn ${view === 'editor' ? 'active' : ''}`}
+                      onClick={() => setView('editor')}
+                      title="Side by side view"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <rect x="1" y="2" width="7" height="14" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+                        <rect x="10" y="2" width="7" height="14" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+                      </svg>
+                    </button>
+                    <button
+                      className={`view-icon-btn ${view === 'reader' ? 'active' : ''}`}
+                      onClick={() => setView('reader')}
+                      disabled={!output}
+                      title="Full screen view"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <rect x="1" y="2" width="16" height="14" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="export-actions">
+                    <button
+                      className="action-btn"
+                      onClick={exportHighlightedPDF}
+                      disabled={!input.trim() || !stats}
+                      title="Download highlighted text PDF"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M2 10v3a1 1 0 001 1h10a1 1 0 001-1v-3M8 2v9M5 8l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span>Text</span>
+                    </button>
+                    <button
+                      className="action-btn"
+                      onClick={exportWordListPDF}
+                      disabled={!unknownWordsList.length}
+                      title="Download vocab list PDF"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M2 10v3a1 1 0 001 1h10a1 1 0 001-1v-3M8 2v9M5 8l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span>Vocab</span>
+                    </button>
+                  </div>
+                </div>
               </div>
               <div className="editor-split">
-                <textarea
-                  placeholder="Paste or type your text here..."
-                  value={input}
-                  onChange={handleInputChange}
-                  disabled={!freqReady}
-                />
+                <div className="input-container">
+                  <textarea
+                    placeholder="Paste or type your text here..."
+                    value={input}
+                    onChange={handleInputChange}
+                    disabled={!freqReady}
+                  />
+                  {!input && freqReady && (
+                    <div className="sample-suggestions">
+                      <span className="sample-label">Try a sample:</span>
+                      {Object.entries(SAMPLE_TEXTS).map(([key, { label }], index) => (
+                        <span key={key}>
+                          <button
+                            className="sample-link"
+                            onClick={() => loadSampleText(key)}
+                          >
+                            {label}
+                          </button>
+                          {index < Object.keys(SAMPLE_TEXTS).length - 1 && <span className="sample-divider">·</span>}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <div className="live-preview">
                   {output ? (
                     <div className="preview-text">
@@ -444,39 +716,85 @@ function App() {
           {view === 'reader' && (
             <div className="reader-view">
               <div className="stats-bar">
-                <div className="stats-row">
-                  <div className="stat">
-                    <span className="stat-value">{stats?.totalWords?.toLocaleString() ?? 0}</span>
-                    <span className="stat-label">Total words</span>
-                  </div>
-                  <div className="stat">
-                    <span className="stat-value">{stats?.uniqueWords?.toLocaleString() ?? 0}</span>
-                    <span className="stat-label">Unique words</span>
-                  </div>
-                  <div className="stat">
-                    <span className="stat-value">{stats?.properNounCount?.toLocaleString() ?? 0}</span>
-                    <span className="stat-label">Names excluded</span>
-                  </div>
-                </div>
-                {stats && (
-                  <div className="comprehension-section">
-                    <span className={`comprehension-status ${stats.knownPercent >= 95 ? 'pass' : 'fail'}`}>
-                      <strong>{stats.knownPercent}%</strong> comprehension
-                      {stats.knownPercent >= 95 ? ' ✓' : ''}
-                    </span>
-                    <div className="comprehension-bar">
-                      <div
-                        className="comprehension-known"
-                        style={{ width: `${stats.knownPercent}%` }}
-                      />
-                      <div
-                        className="comprehension-unknown"
-                        style={{ width: `${100 - stats.knownPercent}%` }}
-                      />
-                      <div className="comprehension-threshold" style={{ left: '95%' }} />
+                <div className="stats-left">
+                  <div className="stats-row">
+                    <div className="stat">
+                      <span className="stat-value">{stats?.totalWords?.toLocaleString() ?? 0}</span>
+                      <span className="stat-label">Total words</span>
+                    </div>
+                    <div className="stat">
+                      <span className="stat-value">{stats?.uniqueWords?.toLocaleString() ?? 0}</span>
+                      <span className="stat-label">Unique words</span>
                     </div>
                   </div>
-                )}
+                  {stats && (
+                    <div className="comprehension-section">
+                      <div className={`stat stat-comprehension ${stats.knownPercent >= 95 ? 'pass' : 'fail'}`}>
+                        <span className="stat-value">{stats.knownPercent}%</span>
+                        <span className="stat-label">comprehension{stats.knownPercent >= 95 ? ' ✓' : ''}</span>
+                      </div>
+                      <div className="comprehension-bar">
+                        <div
+                          className="comprehension-known"
+                          style={{ width: `${stats.knownPercent}%` }}
+                        />
+                        <div
+                          className="comprehension-unknown"
+                          style={{ width: `${100 - stats.knownPercent}%` }}
+                        />
+                        <div className="comprehension-threshold" style={{ left: '95%' }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="stats-actions">
+                  <div className="view-toggle-icons">
+                    <button
+                      className={`view-icon-btn ${view === 'editor' ? 'active' : ''}`}
+                      onClick={() => setView('editor')}
+                      title="Side by side view"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <rect x="1" y="2" width="7" height="14" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+                        <rect x="10" y="2" width="7" height="14" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+                      </svg>
+                    </button>
+                    <button
+                      className={`view-icon-btn ${view === 'reader' ? 'active' : ''}`}
+                      onClick={() => setView('reader')}
+                      disabled={!output}
+                      title="Full screen view"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <rect x="1" y="2" width="16" height="14" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="export-actions">
+                    <button
+                      className="action-btn"
+                      onClick={exportHighlightedPDF}
+                      disabled={!input.trim() || !stats}
+                      title="Download highlighted text PDF"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M2 10v3a1 1 0 001 1h10a1 1 0 001-1v-3M8 2v9M5 8l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span>Text</span>
+                    </button>
+                    <button
+                      className="action-btn"
+                      onClick={exportWordListPDF}
+                      disabled={!unknownWordsList.length}
+                      title="Download vocab list PDF"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M2 10v3a1 1 0 001 1h10a1 1 0 001-1v-3M8 2v9M5 8l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span>Vocab</span>
+                    </button>
+                  </div>
+                </div>
               </div>
               <div className="output-text">
                 {parse(output)}
