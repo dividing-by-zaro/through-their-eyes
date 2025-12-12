@@ -684,12 +684,11 @@ body {
 }
 
 /* =========================================
-   Blur Effect
+   Unfamiliar Word Styles
    ========================================= */
 
-.blur {
-  color: transparent;
-  text-shadow: 0 0 12px var(--chalk);
+/* Base unfamiliar word styles */
+.unfamiliar {
   transition: all 0.3s ease;
   cursor: default;
   border-radius: 2px;
@@ -697,10 +696,37 @@ body {
   margin: 0 -2px;
 }
 
-.blur:hover {
+/* Blur mode - simulates reading difficulty */
+.unfamiliar-blur {
+  color: transparent;
+  text-shadow: 0 0 12px var(--chalk);
+}
+
+.unfamiliar-blur:hover {
   text-shadow: none;
   color: var(--highlight-soft);
   background: rgba(199, 82, 42, 0.2);
+}
+
+/* Underline mode - spell-check style wavy underline */
+.unfamiliar-underline {
+  text-decoration: underline wavy var(--highlight);
+  text-decoration-skip-ink: none;
+  text-underline-offset: 2px;
+}
+
+.unfamiliar-underline:hover {
+  background: rgba(199, 82, 42, 0.15);
+}
+
+/* Highlight mode - highlighter marker style */
+.unfamiliar-highlight {
+  background: rgba(199, 82, 42, 0.25);
+  border-bottom: 2px solid var(--highlight);
+}
+
+.unfamiliar-highlight:hover {
+  background: rgba(199, 82, 42, 0.4);
 }
 
 /* =========================================
@@ -939,6 +965,167 @@ body {
 
 .modal .corpus-option.active .corpus-hint {
   color: var(--ink-light);
+}
+
+/* Display Mode Preview */
+.display-mode-preview {
+  background: var(--chalkboard);
+  color: var(--chalk);
+  padding: var(--space-md);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: var(--space-md);
+}
+
+/* Display Mode Options */
+.display-mode-options {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.display-mode-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-md);
+  background: var(--cream);
+  border: 2px solid var(--parchment);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.display-mode-option input[type="radio"] {
+  display: none;
+}
+
+.display-mode-option span:first-of-type {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink-light);
+}
+
+.display-mode-option .display-mode-hint {
+  font-size: 0.7rem;
+  color: var(--pencil);
+  margin-top: 4px;
+  text-align: center;
+}
+
+.display-mode-option:hover {
+  background: var(--parchment);
+  border-color: var(--pencil);
+}
+
+.display-mode-option.active {
+  background: rgba(199, 82, 42, 0.1);
+  border-color: var(--highlight);
+}
+
+.display-mode-option.active span:first-of-type {
+  color: var(--highlight);
+}
+
+.display-mode-option.active .display-mode-hint {
+  color: var(--ink-light);
+}
+
+/* Large modal variant for About */
+.modal.modal-large {
+  max-width: 700px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-scrollable {
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* About section styles inside modal */
+.modal .about-section {
+  margin-bottom: var(--space-lg);
+}
+
+.modal .about-section:last-child {
+  margin-bottom: 0;
+}
+
+.modal .about-section h3 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.modal .about-section p {
+  margin: 0 0 var(--space-md) 0;
+  color: var(--ink-light);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.modal .about-section strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.modal .about-section ul {
+  margin: 0;
+  padding-left: var(--space-lg);
+  color: var(--ink-light);
+  font-size: 0.9rem;
+}
+
+.modal .about-section li {
+  margin-bottom: var(--space-xs);
+}
+
+.modal .about-section li strong {
+  color: var(--highlight);
+}
+
+.modal .about-section a {
+  color: var(--highlight);
+  text-decoration: none;
+  border-bottom: 1px solid var(--highlight-soft);
+  transition: border-color 0.2s ease;
+}
+
+.modal .about-section a:hover {
+  border-bottom-color: var(--highlight);
+}
+
+/* FAQ styling inside modal */
+.modal .faq-item {
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--parchment);
+}
+
+.modal .faq-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.modal .faq-item h4 {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.modal .faq-item p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
 }
 
 /* =========================================

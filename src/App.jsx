@@ -54,10 +54,12 @@ function App() {
   const [output, setOutput] = useState('');
   const [threshold, setThreshold] = useState(4150); // B1 default
   const [freqReady, setFreqReady] = useState(false);
-  const [view, setView] = useState('editor'); // 'editor', 'reader', or 'about'
+  const [view, setView] = useState('editor'); // 'editor' or 'reader'
   const [stats, setStats] = useState(null);
   const [corpus, setCorpus] = useState('spoken'); // 'spoken' or 'written'
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
+  const [displayMode, setDisplayMode] = useState('blur'); // 'blur', 'underline', 'highlight'
 
   const freqWrittenRef = useRef(null);
   const freqSpokenRef = useRef(null);
@@ -239,7 +241,7 @@ function App() {
         }
 
         paragraphHtml += blur
-          ? `<span class="blur">${rawToken}</span> `
+          ? `<span class="unfamiliar unfamiliar-${displayMode}">${rawToken}</span> `
           : `${rawToken} `;
       }
 
@@ -270,13 +272,23 @@ function App() {
     }
   };
 
+  const handleDisplayModeChange = (newMode) => {
+    setDisplayMode(newMode);
+  };
+
+  // Re-process text when displayMode changes
+  useEffect(() => {
+    if (input.trim() && freqReady) {
+      processTextWithThreshold(threshold, corpus, input);
+    }
+  }, [displayMode]);
+
   const switchToReader = () => {
     if (input.trim() && output) {
       setView('reader');
     }
   };
   const switchToEditor = () => setView('editor');
-  const switchToAbout = () => setView('about');
 
   return (
     <div className="App">
@@ -298,8 +310,8 @@ function App() {
           <button className="sidebar-btn" onClick={() => setShowAdvanced(true)}>
             Advanced Settings
           </button>
-          <button className="sidebar-btn" onClick={view === 'about' ? switchToEditor : switchToAbout}>
-            {view === 'about' ? '← Back to Editor' : 'About this tool'}
+          <button className="sidebar-btn" onClick={() => setShowAbout(true)}>
+            About this tool
           </button>
         </div>
       </aside>
@@ -448,10 +460,113 @@ function App() {
               </button>
             </div>
           )}
-          {view === 'about' && (
-            <div className="about-view">
-              <h2>How It Works</h2>
+        </div>
+      </main>
 
+      {/* Advanced Settings Modal */}
+      {showAdvanced && (
+        <div className="modal-overlay" onClick={() => setShowAdvanced(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Advanced Settings</h2>
+              <button className="modal-close" onClick={() => setShowAdvanced(false)}>×</button>
+            </div>
+            <div className="modal-content">
+              <div className="setting-group">
+                <span className="setting-label">Display style for unfamiliar words</span>
+                <p className="setting-description">
+                  Choose how unfamiliar words appear. Blur simulates the reading experience.
+                  Underline and highlight make words readable while still marking them.
+                </p>
+                <div className="display-mode-preview">
+                  <span>The cat sat on the </span>
+                  <span className={`unfamiliar unfamiliar-${displayMode}`}>ottoman</span>
+                  <span>.</span>
+                </div>
+                <div className="display-mode-options">
+                  <label className={`display-mode-option ${displayMode === 'blur' ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="displayMode"
+                      value="blur"
+                      checked={displayMode === 'blur'}
+                      onChange={() => handleDisplayModeChange('blur')}
+                    />
+                    <span>Blur</span>
+                    <span className="display-mode-hint">Simulates reading</span>
+                  </label>
+                  <label className={`display-mode-option ${displayMode === 'underline' ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="displayMode"
+                      value="underline"
+                      checked={displayMode === 'underline'}
+                      onChange={() => handleDisplayModeChange('underline')}
+                    />
+                    <span>Underline</span>
+                    <span className="display-mode-hint">Spell-check style</span>
+                  </label>
+                  <label className={`display-mode-option ${displayMode === 'highlight' ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="displayMode"
+                      value="highlight"
+                      checked={displayMode === 'highlight'}
+                      onChange={() => handleDisplayModeChange('highlight')}
+                    />
+                    <span>Highlight</span>
+                    <span className="display-mode-hint">Highlighter style</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="setting-group">
+                <span className="setting-label">Frequency corpus</span>
+                <p className="setting-description">
+                  Choose the word frequency source. Spoken uses movie subtitles (everyday vocabulary).
+                  Written uses web text (more formal vocabulary).
+                </p>
+                <div className="corpus-options">
+                  <label className={`corpus-option ${corpus === 'spoken' ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="corpus"
+                      value="spoken"
+                      checked={corpus === 'spoken'}
+                      onChange={() => handleCorpusChange('spoken')}
+                      disabled={!freqReady}
+                    />
+                    <span>Spoken</span>
+                    <span className="corpus-hint">60K words</span>
+                  </label>
+                  <label className={`corpus-option ${corpus === 'written' ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="corpus"
+                      value="written"
+                      checked={corpus === 'written'}
+                      onChange={() => handleCorpusChange('written')}
+                      disabled={!freqReady}
+                    />
+                    <span>Written</span>
+                    <span className="corpus-hint">307K words</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* About Modal */}
+      {showAbout && (
+        <div className="modal-overlay" onClick={() => setShowAbout(false)}>
+          <div className="modal modal-large" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>How It Works</h2>
+              <button className="modal-close" onClick={() => setShowAbout(false)}>×</button>
+            </div>
+            <div className="modal-content modal-scrollable">
               <section className="about-section">
                 <h3>Using This Tool</h3>
                 <p>
@@ -561,55 +676,7 @@ function App() {
                     and shows reading difficulty isn't about intelligence.
                   </p>
                 </div>
-
               </section>
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* Advanced Settings Modal */}
-      {showAdvanced && (
-        <div className="modal-overlay" onClick={() => setShowAdvanced(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Advanced Settings</h2>
-              <button className="modal-close" onClick={() => setShowAdvanced(false)}>×</button>
-            </div>
-            <div className="modal-content">
-              <div className="setting-group">
-                <span className="setting-label">Frequency corpus</span>
-                <p className="setting-description">
-                  Choose the word frequency source. Spoken uses movie subtitles (everyday vocabulary).
-                  Written uses web text (more formal vocabulary).
-                </p>
-                <div className="corpus-options">
-                  <label className={`corpus-option ${corpus === 'spoken' ? 'active' : ''}`}>
-                    <input
-                      type="radio"
-                      name="corpus"
-                      value="spoken"
-                      checked={corpus === 'spoken'}
-                      onChange={() => handleCorpusChange('spoken')}
-                      disabled={!freqReady}
-                    />
-                    <span>Spoken</span>
-                    <span className="corpus-hint">60K words</span>
-                  </label>
-                  <label className={`corpus-option ${corpus === 'written' ? 'active' : ''}`}>
-                    <input
-                      type="radio"
-                      name="corpus"
-                      value="written"
-                      checked={corpus === 'written'}
-                      onChange={() => handleCorpusChange('written')}
-                      disabled={!freqReady}
-                    />
-                    <span>Written</span>
-                    <span className="corpus-hint">307K words</span>
-                  </label>
-                </div>
-              </div>
             </div>
           </div>
         </div>
