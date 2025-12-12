@@ -385,6 +385,20 @@ function App() {
               <h2>How It Works</h2>
 
               <section className="about-section">
+                <h3>Using This Tool</h3>
+                <p>
+                  Paste your text, select a vocabulary level, and click "Show Meaning View"
+                  to see which words might cause difficulty. Hover over blurred words to reveal them. Use this insight
+                  to simplify language, pre-teach vocabulary, or provide glossaries for challenging terms.
+                </p>
+                <p>
+                  You can also choose between two frequency corpora: <strong>Written</strong> (based on web text, 307K words)
+                  or <strong>Spoken</strong> (based on movie subtitles, 60K words). The spoken corpus better represents
+                  everyday conversational vocabulary.
+                </p>
+              </section>
+
+              <section className="about-section">
                 <h3>The 95% Rule</h3>
                 <p>
                   Research shows that readers need to understand approximately <strong>95% of words</strong> in a text
@@ -394,55 +408,39 @@ function App() {
               </section>
 
               <section className="about-section">
-                <h3>Word Frequency & Lemmatization</h3>
+                <h3>Lemmatization</h3>
                 <p>
-                  We use a corpus of word frequencies to estimate which words a reader at each level would know.
-                  Words are ranked by how commonly they appear in English text.
+                  We group inflected forms under their base lemma. For example, "run," "runs," "running," and "ran"
+                  are all counted as knowing "run." This better reflects how vocabulary knowledge works—if you know
+                  a base word, you typically recognize its variations.
                 </p>
+              </section>
+
+              <section className="about-section">
+                <h3>Vocabulary Thresholds</h3>
                 <p>
-                  To better reflect how vocabulary works, we group inflected forms under their base lemma.
-                  For example, "run," "runs," "running," and "ran" are all counted as knowing "run."
-                  This reduces our dictionary from 333,000 word forms to ~307,000 word families, and means
-                  that knowing a base word extends to its common variations.
-                </p>
-                <p>
-                  Our vocabulary thresholds come from <a href="https://www.myvocab.info/en" target="_blank" rel="noopener noreferrer">myvocab.info</a>,
-                  where users self-report their CEFR level and take a vocabulary test. The median scores are:
+                  Our thresholds come from <a href="https://www.myvocab.info/en" target="_blank" rel="noopener noreferrer">myvocab.info</a>,
+                  where users self-report their CEFR level and take a vocabulary test:
                 </p>
                 <ul>
-                  <li><strong>A1 (Beginner)</strong> — ~1,750 word families</li>
-                  <li><strong>A2 (Elementary)</strong> — ~2,650 word families</li>
-                  <li><strong>B1 (Intermediate)</strong> — ~4,150 word families</li>
-                  <li><strong>B2 (Upper Intermediate)</strong> — ~6,050 word families</li>
-                  <li><strong>C1 (Advanced)</strong> — ~8,950 word families</li>
-                  <li><strong>C2 (Proficient)</strong> — ~12,150 word families</li>
-                  <li><strong>Native Speaker</strong> — ~17,000 word families</li>
+                  <li><strong>A1</strong> — ~1,750 words</li>
+                  <li><strong>A2</strong> — ~2,650 words</li>
+                  <li><strong>B1</strong> — ~4,150 words</li>
+                  <li><strong>B2</strong> — ~6,050 words</li>
+                  <li><strong>C1</strong> — ~8,950 words</li>
+                  <li><strong>C2</strong> — ~12,150 words</li>
+                  <li><strong>Native</strong> — ~17,000 words</li>
                 </ul>
               </section>
 
               <section className="about-section">
                 <h3>Limitations</h3>
-                <p>
-                  This is an approximation, not a precise measurement. The model doesn't account for:
-                </p>
                 <ul>
-                  <li><strong>Derivational forms</strong> — "happy" and "happiness" are treated as separate word families,
-                    though learners may recognize the connection</li>
-                  <li><strong>Context</strong> — A word like "bank" has different difficulty depending on meaning</li>
-                  <li><strong>Proper nouns</strong> — Names and places may blur even though readers handle them differently</li>
-                  <li><strong>Domain knowledge</strong> — A biology student knows "mitochondria" even if it's rare overall</li>
-                  <li><strong>Corpus bias</strong> — Our frequency data comes from written text, so everyday spoken words
-                    (like kitchen vocabulary) may be underrepresented</li>
+                  <li><strong>Derivational forms</strong> — "happy" and "happiness" are separate word families</li>
+                  <li><strong>Context</strong> — "bank" has different difficulty depending on meaning</li>
+                  <li><strong>Proper nouns</strong> — Names and places may blur unexpectedly</li>
+                  <li><strong>Domain knowledge</strong> — Specialized terms vary by reader background</li>
                 </ul>
-              </section>
-
-              <section className="about-section">
-                <h3>Using This Tool</h3>
-                <p>
-                  Paste your text, select a vocabulary level, and click "Show Meaning View"
-                  to see which words might cause difficulty. Hover over blurred words to reveal them. Use this insight
-                  to simplify language, pre-teach vocabulary, or provide glossaries for challenging terms.
-                </p>
               </section>
             </div>
           )}
