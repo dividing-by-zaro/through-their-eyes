@@ -27,23 +27,23 @@ const CONTRACTIONS = {
 const SAMPLE_TEXTS = {
   history: {
     label: 'Industrial Revolution',
+    category: 'History',
     file: '/examples/history.txt'
   },
   biology: {
     label: 'Cell Energy',
+    category: 'Biology',
     file: '/examples/biology.txt'
   },
   literature: {
     label: 'Short Story',
+    category: 'Literature',
     file: '/examples/literature.txt'
   },
   nyt: {
-    label: 'NYT Article',
+    label: 'How to Store Leftovers',
+    category: 'News',
     file: '/examples/nytimes.txt'
-  },
-  minecraft: {
-    label: 'Minecraft News',
-    file: '/examples/minecraft.txt'
   }
 };
 
@@ -684,18 +684,19 @@ function App() {
                   />
                   {!input && freqReady && (
                     <div className="sample-suggestions">
-                      <span className="sample-label">Try a sample:</span>
-                      {Object.entries(SAMPLE_TEXTS).map(([key, { label }], index) => (
-                        <span key={key}>
+                      <span className="sample-label">Get started with an example</span>
+                      <div className="sample-chips">
+                        {Object.entries(SAMPLE_TEXTS).map(([key, { label, category }]) => (
                           <button
-                            className="sample-link"
+                            key={key}
+                            className="sample-chip"
                             onClick={() => loadSampleText(key)}
                           >
-                            {label}
+                            <span className="chip-category">{category}</span>
+                            <span className="chip-title">{label}</span>
                           </button>
-                          {index < Object.keys(SAMPLE_TEXTS).length - 1 && <span className="sample-divider">·</span>}
-                        </span>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>

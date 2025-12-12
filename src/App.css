@@ -668,44 +668,103 @@ body {
   cursor: not-allowed;
 }
 
+/* =========================================
+   Sample Suggestions - Compact Chip Design
+   ========================================= */
+
 .sample-suggestions {
   position: absolute;
-  bottom: var(--space-md);
+  bottom: var(--space-lg);
   left: var(--space-md);
   right: var(--space-md);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-sm);
   pointer-events: none;
 }
 
 .sample-label {
-  color: var(--pencil);
-  font-size: 0.85rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
   font-style: italic;
+  color: var(--pencil);
+  opacity: 0.7;
 }
 
-.sample-link {
-  background: none;
-  border: none;
-  padding: 0;
+.sample-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.sample-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--warm-white);
+  border: 1px solid var(--parchment);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.sample-chip:hover {
+  border-color: var(--highlight-soft);
+  background: linear-gradient(135deg, var(--warm-white) 0%, #FDF8F3 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(199, 82, 42, 0.12);
+}
+
+.sample-chip:active {
+  transform: translateY(0);
+}
+
+.chip-category {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--highlight);
+  padding: 2px 6px;
+  background: rgba(199, 82, 42, 0.1);
+  border-radius: 10px;
+}
+
+.chip-title {
   font-family: var(--font-body);
   font-size: 0.85rem;
-  cursor: pointer;
-  pointer-events: auto;
-  transition: color 0.15s ease;
+  color: var(--ink-light);
 }
 
-.sample-link:hover {
-  color: var(--espresso);
-  text-decoration: underline;
+.sample-chip:hover .chip-title {
+  color: var(--ink);
 }
 
-.sample-divider {
-  color: var(--pencil);
-  font-size: 0.85rem;
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .sample-chips {
+    gap: 6px;
+  }
+
+  .sample-chip {
+    padding: 5px 10px;
+    gap: 5px;
+  }
+
+  .chip-category {
+    font-size: 0.55rem;
+    padding: 2px 5px;
+  }
+
+  .chip-title {
+    font-size: 0.8rem;
+  }
 }
 
 .live-preview {
