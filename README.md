@@ -2,7 +2,7 @@
 
 A reading level visualization tool that helps educators understand how text appears to students with different vocabulary levels. Words outside a student's expected vocabulary are blurred instantly as you type, simulating the reading experience of language learners at different CEFR levels (A1-C2).
 
-![Through Their Eyes UI](public/through-their-eyes-ui.png)
+![Through Their Eyes UI](public/through-their-eyes-ui.png?v=2)
 
 ## Features
 
