@@ -121,28 +121,186 @@ body {
 }
 
 /* =========================================
-   Threshold Selector - Sidebar Style
+   Collapsible Section
    ========================================= */
 
-.threshold-section {
-  flex: 1;
+.collapsible-section {
+  border-bottom: 1px solid rgba(232, 228, 217, 0.1);
+  padding-bottom: var(--space-sm);
+  margin-bottom: var(--space-sm);
 }
 
-.threshold-label {
+.collapsible-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-xs) 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: opacity 0.15s ease;
+}
+
+.collapsible-header:hover {
+  opacity: 0.85;
+}
+
+.collapsible-header:hover .collapsible-indicator {
+  color: rgba(232, 228, 217, 0.7);
+}
+
+.collapsible-title {
   font-family: var(--font-display);
   font-size: 0.7rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgba(232, 228, 217, 0.5);
-  margin-bottom: var(--space-xs);
-  display: block;
 }
+
+.collapsible-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(232, 228, 217, 0.35);
+  transition: color 0.15s ease;
+}
+
+.collapsible-chevron {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.collapsible-section.collapsed .collapsible-chevron {
+  transform: rotate(-90deg);
+}
+
+.collapsible-summary {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--chalk);
+  padding: var(--space-xs) 0;
+  opacity: 0;
+  animation: summaryFadeIn 0.2s ease 0.1s forwards;
+}
+
+@keyframes summaryFadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.collapsible-content {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.collapsible-section.collapsed .collapsible-content {
+  grid-template-rows: 0fr;
+}
+
+.collapsible-inner {
+  overflow: hidden;
+}
+
+/* =========================================
+   Sample List - Sidebar Style
+   ========================================= */
+
+.sample-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: var(--space-xs);
+}
+
+.sample-item {
+  display: block;
+  width: 100%;
+  padding: var(--space-xs) var(--space-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--chalk);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sample-item:hover:not(:disabled) {
+  background: rgba(232, 228, 217, 0.08);
+}
+
+.sample-item:active:not(:disabled) {
+  background: rgba(232, 228, 217, 0.12);
+}
+
+.sample-item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   View Toggle - Sidebar Style
+   ========================================= */
+
+.view-toggle {
+  display: flex;
+  gap: 2px;
+  padding-top: var(--space-xs);
+  background: rgba(232, 228, 217, 0.08);
+  border-radius: 6px;
+  padding: 3px;
+}
+
+.view-toggle-btn {
+  flex: 1;
+  padding: var(--space-xs) var(--space-sm);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: rgba(232, 228, 217, 0.6);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.view-toggle-btn:hover:not(:disabled) {
+  color: var(--chalk);
+}
+
+.view-toggle-btn.active {
+  background: var(--highlight);
+  color: white;
+}
+
+.view-toggle-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   Threshold Selector - Sidebar Style
+   ========================================= */
 
 .threshold-options {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding-top: var(--space-xs);
 }
 
 .threshold-option {
@@ -158,7 +316,9 @@ body {
 
 .threshold-option label {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   padding: var(--space-xs) var(--space-sm);
   border: 1px solid transparent;
   border-radius: 4px;
@@ -184,13 +344,20 @@ body {
 .threshold-name {
   font-family: var(--font-display);
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--chalk);
 }
 
+.threshold-meta {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
 .threshold-words {
-  font-size: 0.75rem;
-  color: rgba(232, 228, 217, 0.6);
+  font-size: 0.7rem;
+  color: rgba(232, 228, 217, 0.45);
 }
 
 .threshold-option input[type="radio"]:checked + label .threshold-words {
@@ -198,12 +365,16 @@ body {
 }
 
 .threshold-hint {
-  position: absolute;
-  top: var(--space-sm);
-  right: var(--space-sm);
-  font-size: 0.9rem;
-  color: rgba(232, 228, 217, 0.4);
+  font-size: 0.75rem;
+  color: rgba(232, 228, 217, 0.3);
   cursor: help;
+  margin-left: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.threshold-hint-hidden {
+  visibility: hidden;
+  cursor: default;
 }
 
 .threshold-option label:hover .threshold-hint {
@@ -212,10 +383,6 @@ body {
 
 .threshold-option input[type="radio"]:checked + label .threshold-hint {
   color: rgba(255, 255, 255, 0.6);
-}
-
-.threshold-option label {
-  position: relative;
 }
 
 /* Custom Tooltip */
@@ -390,43 +557,6 @@ body {
   gap: var(--space-sm);
 }
 
-/* Sample Text Buttons */
-.sample-buttons {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  flex-wrap: wrap;
-}
-
-.sample-label {
-  font-size: 0.9rem;
-  color: var(--pencil);
-  margin-right: var(--space-xs);
-}
-
-.sample-btn {
-  padding: var(--space-xs) var(--space-md);
-  background: var(--warm-white);
-  color: var(--ink-light);
-  border: 1px solid var(--parchment);
-  border-radius: 100px;
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.sample-btn:hover:not(:disabled) {
-  border-color: var(--highlight);
-  color: var(--highlight);
-  background: var(--cream);
-}
-
-.sample-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 /* Editor Split Layout */
 .editor-split {
   display: flex;
@@ -499,40 +629,58 @@ body {
 }
 
 /* =========================================
-   Stats Panel
+   Stats Bar
    ========================================= */
 
-.stats-panel {
+.stats-bar {
   background: var(--warm-white);
   border: 1px solid var(--parchment);
   border-radius: 8px;
-  padding: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
   display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
 }
 
-.comprehension-bar-container {
+.stats-row {
   display: flex;
-  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
   gap: var(--space-xs);
 }
 
-.comprehension-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.85rem;
-  color: var(--ink-light);
-}
-
-.comprehension-label strong {
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--ink);
 }
 
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--pencil);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.comprehension-section {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
 .comprehension-status {
-  font-size: 0.8rem;
-  font-weight: 500;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.comprehension-status strong {
+  font-weight: 600;
 }
 
 .comprehension-status.pass {
@@ -545,12 +693,12 @@ body {
 
 .comprehension-bar {
   position: relative;
-  height: 16px;
+  width: 200px;
+  height: 14px;
   background: var(--parchment);
-  border-radius: 8px;
+  border-radius: 7px;
   overflow: hidden;
   display: flex;
-  margin-bottom: var(--space-md);
 }
 
 .comprehension-known {
@@ -567,51 +715,10 @@ body {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 3px;
+  width: 2px;
   background: var(--ink);
   transform: translateX(-50%);
   z-index: 1;
-}
-
-.comprehension-threshold::after {
-  content: '95% threshold';
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.7rem;
-  color: var(--ink);
-  white-space: nowrap;
-  font-weight: 500;
-}
-
-.stats-row {
-  display: flex;
-  gap: var(--space-lg);
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.stat-value {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.stat-label {
-  font-size: 0.75rem;
-  color: var(--pencil);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.stat-muted {
-  opacity: 0.6;
 }
 
 .reader-view .output-text {
@@ -632,55 +739,6 @@ body {
   content: "Their view will appear here...";
   color: rgba(232, 228, 217, 0.4);
   font-style: italic;
-}
-
-/* =========================================
-   Buttons
-   ========================================= */
-
-.submit-btn,
-.edit-btn {
-  align-self: flex-start;
-  padding: var(--space-sm) var(--space-lg);
-  background: var(--highlight);
-  color: var(--warm-white);
-  border: none;
-  border-radius: 100px;
-  font-family: var(--font-display);
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(199, 82, 42, 0.3);
-}
-
-.submit-btn:hover:not(:disabled),
-.edit-btn:hover:not(:disabled) {
-  background: #B5461F;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(199, 82, 42, 0.4);
-}
-
-.submit-btn:active:not(:disabled),
-.edit-btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.submit-btn:disabled {
-  background: var(--pencil);
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.edit-btn {
-  background: var(--chalkboard);
-  border: 2px solid var(--chalk);
-  box-shadow: none;
-}
-
-.edit-btn:hover:not(:disabled) {
-  background: var(--ink);
-  box-shadow: 0 4px 16px rgba(44, 36, 22, 0.3);
 }
 
 /* =========================================

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import parse from 'html-react-parser';
 import nlp from 'compromise';
-import ThresholdSelector from './Components/ThresholdSelector.jsx';
+import ThresholdSelector, { THRESHOLDS } from './Components/ThresholdSelector.jsx';
+import CollapsibleSection from './Components/CollapsibleSection.jsx';
 import { getBestLemma, clearLemmaCache } from './utils/lemmatizer.js';
 
 const customWords = new Set(['biden', 'trump']);
@@ -23,10 +24,6 @@ const CONTRACTIONS = {
 };
 
 const SAMPLE_TEXTS = {
-  science: {
-    label: 'Water Cycle',
-    file: '/examples/science.txt'
-  },
   history: {
     label: 'Industrial Revolution',
     file: '/examples/history.txt'
@@ -283,13 +280,6 @@ function App() {
     }
   }, [displayMode]);
 
-  const switchToReader = () => {
-    if (input.trim() && output) {
-      setView('reader');
-    }
-  };
-  const switchToEditor = () => setView('editor');
-
   return (
     <div className="App">
       <aside className="sidebar">
@@ -300,11 +290,56 @@ function App() {
           </h1>
         </div>
 
-        <ThresholdSelector
-          value={threshold}
-          onChange={handleThresholdChange}
-          isDisabled={!freqReady}
-        />
+        <CollapsibleSection
+          title="Proficiency level"
+          summary={THRESHOLDS.find(t => t.value === threshold)?.name}
+        >
+          <ThresholdSelector
+            value={threshold}
+            onChange={handleThresholdChange}
+            isDisabled={!freqReady}
+          />
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Sample texts"
+          defaultExpanded={false}
+        >
+          <div className="sample-list">
+            {Object.entries(SAMPLE_TEXTS).map(([key, { label }]) => (
+              <button
+                key={key}
+                className="sample-item"
+                onClick={() => loadSampleText(key)}
+                disabled={!freqReady}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="View"
+          summary={view === 'editor' ? 'Side by side' : 'Full screen'}
+          defaultExpanded={false}
+        >
+          <div className="view-toggle">
+            <button
+              className={`view-toggle-btn ${view === 'editor' ? 'active' : ''}`}
+              onClick={() => setView('editor')}
+            >
+              Side by side
+            </button>
+            <button
+              className={`view-toggle-btn ${view === 'reader' ? 'active' : ''}`}
+              onClick={() => setView('reader')}
+              disabled={!output}
+            >
+              Full screen
+            </button>
+          </div>
+        </CollapsibleSection>
 
         <div className="sidebar-buttons">
           <button className="sidebar-btn" onClick={() => setShowAdvanced(true)}>
@@ -320,18 +355,40 @@ function App() {
         <div className="view-container">
           {view === 'editor' && (
             <div className="editor-view">
-              <div className="sample-buttons">
-                <span className="sample-label">Try a sample:</span>
-                {Object.entries(SAMPLE_TEXTS).map(([key, { label }]) => (
-                  <button
-                    key={key}
-                    className="sample-btn"
-                    onClick={() => loadSampleText(key)}
-                    disabled={!freqReady}
-                  >
-                    {label}
-                  </button>
-                ))}
+              <div className="stats-bar">
+                <div className="stats-row">
+                  <div className="stat">
+                    <span className="stat-value">{stats?.totalWords?.toLocaleString() ?? 0}</span>
+                    <span className="stat-label">Total words</span>
+                  </div>
+                  <div className="stat">
+                    <span className="stat-value">{stats?.uniqueWords?.toLocaleString() ?? 0}</span>
+                    <span className="stat-label">Unique words</span>
+                  </div>
+                  <div className="stat">
+                    <span className="stat-value">{stats?.properNounCount?.toLocaleString() ?? 0}</span>
+                    <span className="stat-label">Names excluded</span>
+                  </div>
+                </div>
+                {stats && (
+                  <div className="comprehension-section">
+                    <span className={`comprehension-status ${stats.knownPercent >= 95 ? 'pass' : 'fail'}`}>
+                      <strong>{stats.knownPercent}%</strong> comprehension
+                      {stats.knownPercent >= 95 ? ' ✓' : ''}
+                    </span>
+                    <div className="comprehension-bar">
+                      <div
+                        className="comprehension-known"
+                        style={{ width: `${stats.knownPercent}%` }}
+                      />
+                      <div
+                        className="comprehension-unknown"
+                        style={{ width: `${100 - stats.knownPercent}%` }}
+                      />
+                      <div className="comprehension-threshold" style={{ left: '95%' }} />
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="editor-split">
                 <textarea
@@ -352,69 +409,31 @@ function App() {
                   )}
                 </div>
               </div>
-              {stats && (
-                <div className="stats-panel">
-                  <div className="comprehension-bar-container">
-                    <div className="comprehension-label">
-                      <span>Comprehension: <strong>{stats.knownPercent}%</strong> known</span>
-                      <span className={`comprehension-status ${stats.knownPercent >= 95 ? 'pass' : 'fail'}`}>
-                        {stats.knownPercent >= 95 ? '✓ Meets 95% threshold' : '✗ Below 95% threshold'}
-                      </span>
-                    </div>
-                    <div className="comprehension-bar">
-                      <div
-                        className="comprehension-known"
-                        style={{ width: `${stats.knownPercent}%` }}
-                      />
-                      <div
-                        className="comprehension-unknown"
-                        style={{ width: `${100 - stats.knownPercent}%` }}
-                      />
-                      <div className="comprehension-threshold" style={{ left: '95%' }} />
-                    </div>
-                  </div>
-                  <div className="stats-row">
-                    <div className="stat">
-                      <span className="stat-value">{stats.totalWords.toLocaleString()}</span>
-                      <span className="stat-label">Total words</span>
-                    </div>
-                    <div className="stat">
-                      <span className="stat-value">{stats.uniqueWords.toLocaleString()}</span>
-                      <span className="stat-label">Unique words</span>
-                    </div>
-                    <div className="stat">
-                      <span className="stat-value">{stats.avgRank.toLocaleString()}</span>
-                      <span className="stat-label">Avg. word rank</span>
-                    </div>
-                    {stats.properNounCount > 0 && (
-                      <div className="stat stat-muted">
-                        <span className="stat-value">{stats.properNounCount.toLocaleString()}</span>
-                        <span className="stat-label">Names excluded</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-              <button
-                className="submit-btn"
-                disabled={!freqReady || !output}
-                onClick={switchToReader}
-              >
-                Reader View
-              </button>
             </div>
           )}
           {view === 'reader' && (
             <div className="reader-view">
-              {stats && (
-                <div className="stats-panel">
-                  <div className="comprehension-bar-container">
-                    <div className="comprehension-label">
-                      <span>Comprehension: <strong>{stats.knownPercent}%</strong> known</span>
-                      <span className={`comprehension-status ${stats.knownPercent >= 95 ? 'pass' : 'fail'}`}>
-                        {stats.knownPercent >= 95 ? '✓ Meets 95% threshold' : '✗ Below 95% threshold'}
-                      </span>
-                    </div>
+              <div className="stats-bar">
+                <div className="stats-row">
+                  <div className="stat">
+                    <span className="stat-value">{stats?.totalWords?.toLocaleString() ?? 0}</span>
+                    <span className="stat-label">Total words</span>
+                  </div>
+                  <div className="stat">
+                    <span className="stat-value">{stats?.uniqueWords?.toLocaleString() ?? 0}</span>
+                    <span className="stat-label">Unique words</span>
+                  </div>
+                  <div className="stat">
+                    <span className="stat-value">{stats?.properNounCount?.toLocaleString() ?? 0}</span>
+                    <span className="stat-label">Names excluded</span>
+                  </div>
+                </div>
+                {stats && (
+                  <div className="comprehension-section">
+                    <span className={`comprehension-status ${stats.knownPercent >= 95 ? 'pass' : 'fail'}`}>
+                      <strong>{stats.knownPercent}%</strong> comprehension
+                      {stats.knownPercent >= 95 ? ' ✓' : ''}
+                    </span>
                     <div className="comprehension-bar">
                       <div
                         className="comprehension-known"
@@ -427,37 +446,11 @@ function App() {
                       <div className="comprehension-threshold" style={{ left: '95%' }} />
                     </div>
                   </div>
-                  <div className="stats-row">
-                    <div className="stat">
-                      <span className="stat-value">{stats.totalWords.toLocaleString()}</span>
-                      <span className="stat-label">Total words</span>
-                    </div>
-                    <div className="stat">
-                      <span className="stat-value">{stats.uniqueWords.toLocaleString()}</span>
-                      <span className="stat-label">Unique words</span>
-                    </div>
-                    <div className="stat">
-                      <span className="stat-value">{stats.avgRank.toLocaleString()}</span>
-                      <span className="stat-label">Avg. word rank</span>
-                    </div>
-                    {stats.properNounCount > 0 && (
-                      <div className="stat stat-muted">
-                        <span className="stat-value">{stats.properNounCount.toLocaleString()}</span>
-                        <span className="stat-label">Names excluded</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
               <div className="output-text">
                 {parse(output)}
               </div>
-              <button
-                className="edit-btn"
-                onClick={switchToEditor}
-              >
-                Back to Editor
-              </button>
             </div>
           )}
         </div>
