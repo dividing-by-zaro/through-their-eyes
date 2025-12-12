@@ -218,6 +218,76 @@ body {
 }
 
 /* =========================================
+   Corpus Toggle
+   ========================================= */
+
+.corpus-toggle {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid rgba(232, 228, 217, 0.15);
+}
+
+.corpus-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(232, 228, 217, 0.6);
+  margin-bottom: var(--space-sm);
+}
+
+.corpus-options {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.corpus-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-sm);
+  background: rgba(232, 228, 217, 0.05);
+  border: 1px solid rgba(232, 228, 217, 0.1);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.corpus-option input[type="radio"] {
+  display: none;
+}
+
+.corpus-option span:first-of-type {
+  font-size: 0.85rem;
+  color: rgba(232, 228, 217, 0.7);
+}
+
+.corpus-option .corpus-hint {
+  font-size: 0.65rem;
+  color: rgba(232, 228, 217, 0.4);
+  margin-top: 2px;
+}
+
+.corpus-option:hover {
+  background: rgba(232, 228, 217, 0.1);
+  border-color: rgba(232, 228, 217, 0.2);
+}
+
+.corpus-option.active {
+  background: rgba(199, 82, 42, 0.2);
+  border-color: var(--highlight);
+}
+
+.corpus-option.active span:first-of-type {
+  color: var(--chalk);
+}
+
+.corpus-option.active .corpus-hint {
+  color: rgba(232, 228, 217, 0.6);
+}
+
+/* =========================================
    Main Content Area
    ========================================= */
 

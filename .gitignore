@@ -29,6 +29,9 @@ dist-ssr
 # Backup files
 backups/
 
+# Large source data files
+*.csv
+
 # Claude Code local settings
 .claude/
 

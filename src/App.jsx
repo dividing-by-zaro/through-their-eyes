@@ -57,16 +57,29 @@ function App() {
   const [view, setView] = useState('teacher'); // 'teacher', 'student', or 'about'
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [stats, setStats] = useState(null);
+  const [corpus, setCorpus] = useState('written'); // 'written' or 'spoken'
 
-  const freqRef = useRef(null);
+  const freqWrittenRef = useRef(null);
+  const freqSpokenRef = useRef(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/words-lemmatized.json');
-        const data = await res.json();
-        freqRef.current = data;
+        const [writtenRes, spokenRes] = await Promise.all([
+          fetch('/words-lemmatized.json'),
+          fetch('/words-subtlex.json')
+        ]);
+        const [writtenData, spokenData] = await Promise.all([
+          writtenRes.json(),
+          spokenRes.json()
+        ]);
+        freqWrittenRef.current = writtenData;
+        freqSpokenRef.current = spokenData;
         setFreqReady(true);
+        console.log('Loaded corpora:', {
+          written: Object.keys(writtenData).length,
+          spoken: Object.keys(spokenData).length
+        });
       } catch (err) {
         console.error('Failed to load frequency list', err);
       }
@@ -91,8 +104,12 @@ function App() {
     }
   };
 
-  const processTextWithThreshold = (thresh) => {
-    if (!freqRef.current) return;
+  // Get the active frequency dictionary based on corpus selection
+  const getActiveDict = (corpusType = corpus) => corpusType === 'spoken' ? freqSpokenRef.current : freqWrittenRef.current;
+
+  const processTextWithThreshold = (thresh, corpusType = corpus) => {
+    const freqDict = getActiveDict(corpusType);
+    if (!freqDict) return;
 
     // Split into paragraphs to preserve line breaks
     const paragraphs = (input || '').split(/\n/);
@@ -125,7 +142,7 @@ function App() {
         if (contractionBase) {
           // Handle contraction as its base word
           uniqueWordsSet.add(contractionBase);
-          const rank = freqRef.current[contractionBase];
+          const rank = freqDict[contractionBase];
           if (rank !== undefined) {
             wordRanks.push(rank);
           }
@@ -143,10 +160,10 @@ function App() {
           if (!clean) continue;
 
           // Get the best lemma form (e.g., "running" → "run")
-          const lemma = getBestLemma(clean, freqRef.current);
+          const lemma = getBestLemma(clean, freqDict);
           uniqueWordsSet.add(lemma);
 
-          const rank = freqRef.current[lemma];
+          const rank = freqDict[lemma];
           if (rank !== undefined) {
             wordRanks.push(rank);
             if (tokenRank === null || rank > tokenRank) tokenRank = rank;
@@ -186,8 +203,15 @@ function App() {
     setOutput(processedParagraphs.join('<br/>'));
   };
 
+  const handleCorpusChange = (newCorpus) => {
+    setCorpus(newCorpus);
+    if (hasSubmitted && input.trim()) {
+      processTextWithThreshold(threshold, newCorpus);
+    }
+  };
+
   const processText = () => {
-    if (!freqRef.current) return;
+    if (!getActiveDict()) return;
     setIsBusy(true);
     processTextWithThreshold(threshold);
     setHasSubmitted(true);
@@ -216,6 +240,37 @@ function App() {
           onChange={handleThresholdChange}
           isDisabled={isBusy || !freqReady}
         />
+
+        {/* Corpus selector */}
+        <div className="corpus-toggle">
+          <span className="corpus-label">Frequency corpus</span>
+          <div className="corpus-options">
+            <label className={`corpus-option ${corpus === 'written' ? 'active' : ''}`}>
+              <input
+                type="radio"
+                name="corpus"
+                value="written"
+                checked={corpus === 'written'}
+                onChange={() => handleCorpusChange('written')}
+                disabled={!freqReady}
+              />
+              <span>Written</span>
+              <span className="corpus-hint">307K words</span>
+            </label>
+            <label className={`corpus-option ${corpus === 'spoken' ? 'active' : ''}`}>
+              <input
+                type="radio"
+                name="corpus"
+                value="spoken"
+                checked={corpus === 'spoken'}
+                onChange={() => handleCorpusChange('spoken')}
+                disabled={!freqReady}
+              />
+              <span>Spoken</span>
+              <span className="corpus-hint">60K words</span>
+            </label>
+          </div>
+        </div>
       </aside>
 
       <main className="main-content">
