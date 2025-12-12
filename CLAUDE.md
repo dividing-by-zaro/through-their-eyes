@@ -4,41 +4,85 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-"Through Their Eyes" is a React-based reading level visualization tool that helps educators understand how text appears to students with different vocabulary levels. It blurs words that fall outside a user's selected vocabulary threshold based on word frequency data.
+"Through Their Eyes" is a React-based reading level visualization tool that helps educators understand how text appears to students with different vocabulary levels. Words outside a reader's expected vocabulary are blurred, simulating the reading experience of language learners at different CEFR levels (A1-C2).
 
 ## Commands
 
 ```bash
 # Development
-npm run dev        # Start Vite dev server
+npm run dev        # Start Vite dev server (port 5173 or 5174)
 
 # Build
 npm run build      # Production build
+npm run preview    # Preview production build
 
-# Preview production build
-npm run preview
+# Build frequency dictionaries (Python/uv)
+uv run python scripts/build_lemma_dict.py     # Build lemmatized written corpus
+uv run python scripts/build_subtlex_dict.py   # Build spoken corpus from SUBTLEX
 ```
 
 ## Architecture
 
-**Stack:** React 18 + Vite 4
+**Stack:** React 18 + Vite 4 + wink-lemmatizer
 
-**Core Components:**
-- `src/App.jsx` - Main application logic with text processing and blur visualization
-- `src/Components/ThresholdSelector.jsx` - Radio button selector for vocabulary level presets (500, 3000, 10000, 15000 words)
+**Key Files:**
+- `src/App.jsx` - Main application with text processing, corpus selection, and UI
+- `src/App.css` - Styling with warm scholarly theme (Fraunces + Source Serif fonts)
+- `src/Components/ThresholdSelector.jsx` - CEFR level selector (A1-C2 + Native)
+- `src/utils/lemmatizer.js` - Runtime lemmatization with caching
 
-**Data Flow:**
-1. Word frequency data loads from `/public/words.json` (format: `{ "word": rank }`)
-2. User inputs text and selects vocabulary threshold
-3. Text is tokenized and each word's frequency rank is checked against threshold
-4. Words above threshold are wrapped in `.blur` class for visual obscuring
+**Frequency Data (in `/public/`):**
+- `words-lemmatized.json` - Written corpus, 307K lemmas (from web text)
+- `words-subtlex.json` - Spoken corpus, 60K words (from movie subtitles)
 
-**Key Logic in App.jsx:**
-- `freqRef` holds the frequency map (word → rank)
-- `customWords` Set contains special-cased words that bypass blur (e.g., "biden", "trump")
-- Tokenization handles hyphens and apostrophes by splitting and checking sub-tokens
-- Words with rank > threshold or not in frequency list get blurred
+**Build Scripts (in `/scripts/`):**
+- `build_lemma_dict.py` - Converts raw frequency data to lemmatized JSON
+- `build_subtlex_dict.py` - Converts SUBTLEX CSV to JSON
 
-**Styling:**
-- `.blur` class applies text-shadow blur effect, reveals on hover
-- Dark theme by default in App.css
+## Data Flow
+
+1. Both frequency corpora load on startup (`freqWrittenRef`, `freqSpokenRef`)
+2. User selects CEFR level (threshold) and corpus type (Written/Spoken)
+3. User inputs text or loads a sample
+4. Text processing:
+   - Contractions expanded to base verbs (aren't → are)
+   - Words lemmatized via wink-lemmatizer (running → run)
+   - Rank looked up in selected corpus
+   - Words above threshold or not found → blurred
+5. Stats calculated: total words, unique words, known %, avg rank
+6. Output rendered with blur effect on unknown words
+
+## CEFR Thresholds (from myvocab.info)
+
+| Level | Words |
+|-------|-------|
+| A1 | 1,750 |
+| A2 | 2,650 |
+| B1 | 4,150 |
+| B2 | 6,050 |
+| C1 | 8,950 |
+| C2 | 12,150 |
+| Native | 17,000 |
+
+## Key Features
+
+- **Lemmatization**: Groups inflected forms (run/runs/running/ran) under base lemma
+- **Two corpora**: Written (formal text) vs Spoken (movie subtitles for everyday vocab)
+- **Contraction handling**: Maps contractions to base verbs
+- **95% comprehension bar**: Visual indicator of whether text meets research threshold
+- **Sample texts**: Science, history, biology, literature, news, gaming
+- **Hover reveal**: Blurred words reveal on hover
+
+## Styling
+
+- Warm scholarly theme with paper textures
+- Dark sidebar with CEFR level cards
+- Corpus toggle (Written/Spoken) at bottom of sidebar
+- Comprehension bar with 95% threshold marker (blue/orange colorblind-friendly)
+
+## TODO (from README)
+
+- [ ] Proper noun handling
+- [ ] Custom ignore list (click to add words)
+- [ ] AI simplification
+- [ ] Word details on hover
